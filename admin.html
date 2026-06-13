@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SML Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --n0:#050F1E;--n1:#081426;--n2:#0C1E3A;--n3:#122650;--n4:#1A3168;
+  --g1:#C8961A;--g2:#E8AE28;--g3:#F0C040;
+  --wh:#FFF;--si:#B8CAE0;--mu:#6A849E;
+  --gr:#22C55E;--re:#EF4444;--bd:rgba(200,150,26,.2);
+  --sw:256px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:"Inter",sans-serif;background:var(--n1);color:var(--wh);overflow-x:hidden;}
+a{text-decoration:none;color:inherit;}
+img{display:block;}
+input,select,textarea,button{font-family:"Inter",sans-serif;}
+
+/* LOGIN */
+.login-wrap{position:fixed;inset:0;background:linear-gradient(160deg,var(--n0),var(--n2));display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
+.login-wrap.gone{display:none;}
+.login-box{background:var(--n2);border:1px solid var(--bd);border-radius:22px;padding:40px;width:100%;max-width:420px;}
+.lb-head{text-align:center;margin-bottom:28px;}
+.lb-head svg{width:60px;height:60px;margin:0 auto 12px;}
+.lb-head h1{font-family:"Barlow Condensed",sans-serif;font-size:24px;font-weight:900;color:var(--wh);}
+.lb-head p{font-size:12px;color:var(--mu);margin-top:4px;}
+.lb-id-card{background:rgba(200,150,26,.08);border:1px solid rgba(200,150,26,.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.lb-id-icon{font-size:20px;}
+.lb-id-val{font-family:"Barlow Condensed",sans-serif;font-size:18px;font-weight:900;color:var(--g2);letter-spacing:1px;}
+.lb-id-lbl{font-size:10px;font-weight:700;color:var(--g1);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.lerr{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#FCA5A5;font-size:12px;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:none;}
+.lerr.show{display:block;}
+
+/* LAYOUT */
+.app{display:flex;min-height:100vh;}
+.app.gone{display:none;}
+
+/* SIDEBAR */
+.sb{width:var(--sw);flex-shrink:0;background:linear-gradient(180deg,var(--n2),var(--n3));border-right:1px solid var(--bd);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;overflow-y:auto;transition:width .3s;}
+.sb.slim{width:58px;}
+.sb.slim .sb-txt,.sb.slim .sb-badge,.sb.slim .sb-sec,.sb.slim .sb-uinfo,.sb.slim .lb-copy{display:none!important;}
+.sb.slim .sb-item{justify-content:center;padding:11px 0;}
+.sb-head{padding:16px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;min-height:62px;gap:8px;}
+.sb-logo{display:flex;align-items:center;gap:10px;overflow:hidden;min-width:0;}
+.sb-logo svg{width:34px;height:34px;flex-shrink:0;}
+.lb-copy{min-width:0;}
+.lb-name{font-family:"Cinzel",serif;font-size:12.5px;font-weight:700;color:var(--wh);letter-spacing:.4px;white-space:nowrap;}
+.lb-name em{color:var(--g2);font-style:normal;}
+.lb-sub{font-size:7.5px;font-weight:600;color:var(--g1);letter-spacing:2.5px;text-transform:uppercase;display:block;margin-top:2px;white-space:nowrap;}
+.sb-tog{background:rgba(200,150,26,.1);border:1px solid rgba(200,150,26,.2);color:var(--g2);width:26px;height:26px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all .2s;}
+.sb-tog:hover{background:rgba(200,150,26,.2);}
+.sb-nav{flex:1;padding:10px 8px;}
+.sb-sec{font-size:9px;font-weight:700;color:var(--mu);letter-spacing:2px;text-transform:uppercase;padding:12px 8px 6px;white-space:nowrap;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;margin-bottom:1px;font-size:13px;font-weight:500;color:var(--si);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.sb-item:hover{background:rgba(200,150,26,.1);color:var(--g2);}
+.sb-item.on{background:rgba(200,150,26,.15);color:var(--g2);font-weight:600;}
+.sb-item .ic{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+.sb-txt{flex:1;overflow:hidden;text-overflow:ellipsis;}
+.sb-badge{margin-left:auto;background:var(--g1);color:var(--n1);font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;flex-shrink:0;}
+.sb-foot{padding:12px;border-top:1px solid var(--bd);flex-shrink:0;}
+.sb-user{display:flex;align-items:center;gap:9px;padding:9px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(200,150,26,.12);overflow:hidden;}
+.sb-av{width:32px;height:32px;background:linear-gradient(135deg,var(--g1),var(--g3));border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--n1);font-weight:800;font-size:13px;flex-shrink:0;}
+.sb-uinfo strong{font-size:12px;display:block;white-space:nowrap;}
+.sb-uinfo span{font-size:10px;color:var(--g1);white-space:nowrap;}
+
+/* MAIN */
+.main-area{flex:1;margin-left:var(--sw);min-height:100vh;display:flex;flex-direction:column;transition:margin-left .3s;}
+.main-area.wide{margin-left:58px;}
+
+/* TOPBAR */
+.topbar{background:rgba(8,20,38,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);padding:0 22px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.tb-l{display:flex;align-items:center;gap:12px;}
+.tb-mob{display:none;background:none;border:none;cursor:pointer;color:var(--si);font-size:20px;}
+.tb-title{font-family:"Barlow Condensed",sans-serif;font-size:19px;font-weight:800;color:var(--wh);}
+.tb-r{display:flex;align-items:center;gap:9px;}
+.tb-btn{background:rgba(255,255,255,.06);border:1px solid rgba(200,150,26,.14);color:var(--si);padding:6px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.tb-btn:hover{background:rgba(200,150,26,.1);color:var(--g2);}
+.tb-live{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gr);font-weight:600;}
+.tb-dot{width:7px;height:7px;background:var(--gr);border-radius:50%;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* CONTENT */
+.content{flex:1;padding:22px;}
+.pg{display:none;}
+.pg.on{display:block;}
+
+/* FORM */
+.fg{margin-bottom:13px;}
+.fg label{font-size:10.5px;font-weight:700;color:var(--g1);letter-spacing:1px;display:block;margin-bottom:6px;text-transform:uppercase;}
+.fg input,.fg select,.fg textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(200,150,26,.15);border-radius:8px;padding:10px 13px;color:var(--wh);font-size:13.5px;outline:none;transition:border-color .2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--g1);}
+.fg select option{background:var(--n1);}
+.fg textarea{resize:vertical;min-height:80px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* BUTTONS */
+.btn-g{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--g1),var(--g3));color:var(--n1);border:none;padding:10px 22px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-g:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(200,150,26,.4);}
+.btn-s{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--si);padding:10px 18px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-s:hover{background:rgba(255,255,255,.1);}
+.btn-r{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:var(--re);padding:9px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;}
+
+/* CARD */
+.card{background:rgba(18,38,80,.7);border:1px solid rgba(200,150,26,.12);border-radius:13px;padding:20px;margin-bottom:16px;}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(200,150,26,.08);}
+.ct{font-family:"Barlow Condensed",sans-serif;font-size:16px;font-weight:800;color:var(--wh);}
+.ca{background:rgba(200,150,26,.1);border:1px solid rgba(200,150,26,.2);color:var(--g2);font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:6px;cursor:pointer;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.sc{background:rgba(18,38,80,.7);border:1px solid rgba(200,150,26,.12);border-radius:13px;padding:18px;transition:all .25s;}
+.sc:hover{border-color:rgba(200,150,26,.3);transform:translateY(-3px);}
+.sc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:11px;}
+.sc-ico{width:42px;height:42px;border-radius:11px;background:rgba(200,150,26,.12);display:flex;align-items:center;justify-content:center;font-size:19px;}
+.sc-tr{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:20px;background:rgba(34,197,94,.15);color:var(--gr);}
+.sc-val{font-family:"Barlow Condensed",sans-serif;font-size:30px;font-weight:900;color:var(--wh);line-height:1;}
+.sc-lbl{font-size:11px;color:var(--mu);margin-top:3px;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+
+/* TOGGLE */
+.tg-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.tg{position:relative;width:40px;height:22px;cursor:pointer;}
+.tg input{opacity:0;width:0;height:0;}
+.tg-sl{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:11px;transition:.3s;border:1px solid rgba(200,150,26,.2);}
+.tg-sl::before{content:"";position:absolute;height:16px;width:16px;left:2px;bottom:2px;background:var(--mu);border-radius:50%;transition:.3s;}
+.tg input:checked+.tg-sl{background:rgba(200,150,26,.3);border-color:var(--g1);}
+.tg input:checked+.tg-sl::before{transform:translateX(18px);background:var(--g2);}
+.tg-lbl{font-size:13px;color:var(--si);}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:10.5px;font-weight:700;color:var(--g1);letter-spacing:1px;text-transform:uppercase;padding:8px 11px;border-bottom:1px solid rgba(200,150,26,.12);text-align:left;}
+.tbl td{padding:10px 11px;border-bottom:1px solid rgba(200,150,26,.06);font-size:13px;color:var(--si);vertical-align:middle;}
+.tbl tr:hover td{background:rgba(200,150,26,.04);}
+.ti{width:44px;height:44px;object-fit:cover;border-radius:7px;}
+.tn{color:var(--wh);font-weight:500;}
+.tp{color:var(--g2);font-weight:700;font-family:"Barlow Condensed",sans-serif;font-size:15px;}
+.tbdg{font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;text-transform:uppercase;}
+.tbdg.on{background:rgba(34,197,94,.15);color:var(--gr);}
+.tbdg.off{background:rgba(239,68,68,.1);color:var(--re);}
+.acts{display:flex;gap:5px;}
+.act{background:rgba(255,255,255,.06);border:none;color:var(--si);padding:4px 9px;border-radius:5px;cursor:pointer;font-size:11.5px;transition:all .2s;}
+.act:hover{background:rgba(200,150,26,.15);color:var(--g2);}
+.act.del:hover{background:rgba(239,68,68,.15);color:var(--re);}
+
+/* MQ ITEMS */
+.mq-item{display:flex;align-items:center;gap:8px;padding:8px 11px;background:rgba(255,255,255,.03);border:1px solid rgba(200,150,26,.1);border-radius:8px;margin-bottom:6px;}
+.mq-txt{flex:1;font-size:12.5px;color:var(--si);}
+.mq-del{background:none;border:none;color:var(--mu);cursor:pointer;font-size:13px;transition:color .2s;}
+.mq-del:hover{color:var(--re);}
+
+/* CHART */
+.chart-bars{display:flex;align-items:flex-end;gap:5px;height:130px;}
+.bar{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--g2),rgba(200,150,26,.25));min-height:4px;transition:height .6s ease;cursor:pointer;}
+.bar:hover{background:linear-gradient(180deg,var(--g3),var(--g1));}
+.chart-lbl{display:flex;gap:5px;margin-top:4px;}
+.chart-lbl span{flex:1;text-align:center;font-size:9.5px;color:var(--mu);}
+
+/* CHAT PANEL */
+.chat-panel{display:grid;grid-template-columns:270px 1fr;border:1px solid rgba(200,150,26,.12);border-radius:12px;overflow:hidden;min-height:480px;}
+.session-list{background:rgba(255,255,255,.02);border-right:1px solid rgba(200,150,26,.1);overflow-y:auto;}
+.session-item{padding:12px 14px;border-bottom:1px solid rgba(200,150,26,.06);cursor:pointer;transition:background .2s;}
+.session-item:hover{background:rgba(200,150,26,.08);}
+.session-item.active{background:rgba(200,150,26,.15);}
+.si-name{font-size:13px;font-weight:600;color:var(--wh);}
+.si-preview{font-size:11px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px;}
+.si-id{font-size:10px;color:var(--g1);margin-top:2px;}
+.si-time{font-size:10px;color:var(--mu);}
+.chat-win{display:flex;flex-direction:column;}
+.cw-head{padding:14px 16px;border-bottom:1px solid rgba(200,150,26,.08);background:rgba(255,255,255,.02);}
+.cw-name{font-size:13px;font-weight:600;color:var(--wh);}
+.cw-sub{font-size:11px;color:var(--mu);}
+.cw-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;max-height:300px;min-height:180px;}
+.cw-bubble{max-width:82%;padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.55;}
+.cw-bubble.admin{background:linear-gradient(135deg,var(--g1),var(--g3));color:var(--n1);align-self:flex-end;border-radius:12px 4px 12px 12px;}
+.cw-bubble.visitor{background:rgba(255,255,255,.06);color:var(--si);align-self:flex-start;border-radius:4px 12px 12px 12px;}
+.cw-from{font-size:10px;font-weight:700;color:var(--g1);margin-bottom:3px;}
+.cw-ts{font-size:10px;opacity:.6;margin-top:4px;text-align:right;}
+.cw-input{padding:12px 14px;border-top:1px solid rgba(200,150,26,.08);display:flex;gap:8px;}
+.cw-input input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(200,150,26,.15);border-radius:8px;padding:10px 13px;color:var(--wh);font-size:13px;outline:none;}
+
+/* IMG GRID */
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:12px;}
+.img-th{position:relative;border-radius:9px;overflow:hidden;background:var(--n3);border:1px solid rgba(200,150,26,.1);aspect-ratio:1;cursor:pointer;}
+.img-th img{width:100%;height:100%;object-fit:cover;}
+.img-ov{position:absolute;inset:0;background:rgba(8,20,38,.78);display:none;align-items:center;justify-content:center;gap:6px;}
+.img-th:hover .img-ov{display:flex;}
+.ib{background:rgba(255,255,255,.15);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.img-lbl{font-size:9.5px;color:var(--mu);text-align:center;padding:4px;position:absolute;bottom:0;left:0;right:0;background:rgba(8,20,38,.7);}
+
+/* WIDGET BUILDER */
+.palette-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px;margin-bottom:20px;}
+.pal-item{background:rgba(255,255,255,.04);border:1px solid rgba(200,150,26,.12);border-radius:9px;padding:13px;cursor:pointer;transition:all .2s;text-align:center;}
+.pal-item:hover{background:rgba(200,150,26,.1);border-color:rgba(200,150,26,.3);transform:translateY(-2px);}
+.pal-icon{font-size:24px;margin-bottom:6px;}
+.pal-name{font-size:12px;font-weight:600;color:var(--si);}
+.pal-desc{font-size:10.5px;color:var(--mu);margin-top:3px;}
+.canvas-area{min-height:260px;background:rgba(255,255,255,.02);border:2px dashed rgba(200,150,26,.2);border-radius:14px;padding:14px;margin-bottom:14px;}
+.wi-card{background:rgba(18,38,80,.8);border:1px solid rgba(200,150,26,.15);border-radius:11px;padding:14px;margin-bottom:9px;display:flex;align-items:center;gap:10px;}
+.wi-icon{font-size:20px;}
+.wi-title{font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:800;color:var(--wh);flex:1;}
+.wi-pos{font-size:11px;color:var(--mu);}
+.wi-acts{display:flex;gap:5px;}
+.wi-act{background:rgba(255,255,255,.06);border:none;color:var(--mu);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:11px;transition:all .2s;}
+.wi-act:hover{color:var(--g2);}
+
+/* NOTIF */
+.notif-area{position:fixed;top:68px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:6px;max-width:300px;}
+.ni{background:var(--n2);border:1px solid rgba(200,150,26,.2);border-radius:9px;padding:10px 14px;font-size:12.5px;color:var(--wh);box-shadow:0 8px 22px rgba(0,0,0,.4);animation:slideIn .3s ease;display:flex;align-items:center;gap:8px;}
+@keyframes slideIn{from{opacity:0;transform:translateX(110%)}to{opacity:1;transform:none}}
+.ni.ok{border-color:rgba(34,197,94,.3);}
+.ni.err{border-color:rgba(239,68,68,.3);}
+
+/* RESPONSIVE */
+@media(max-width:1024px){.stats{grid-template-columns:1fr 1fr;}.g2{grid-template-columns:1fr;}.chat-panel{grid-template-columns:1fr;}}
+@media(max-width:768px){.sb{transform:translateX(-100%);}.sb.mob-open{transform:translateX(0);}.main-area{margin-left:0!important;}.tb-mob{display:flex;}}
+@media(max-width:480px){.stats{grid-template-columns:1fr;}.fg2,.fg3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="notif-area" id="NA"></div>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="lb-head">
+      <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#C8961A"/><stop offset="100%" stop-color="#F0C040"/></linearGradient></defs>
+        <circle cx="25" cy="25" r="23" fill="none" stroke="url(#lg)" stroke-width="1.6"/>
+        <g fill="url(#lg)"><rect x="23.2" y="1" width="3.6" height="6" rx="1"/><rect x="23.2" y="43" width="3.6" height="6" rx="1"/><rect x="1" y="23.2" width="6" height="3.6" rx="1"/><rect x="43" y="23.2" width="6" height="3.6" rx="1"/></g>
+        <circle cx="25" cy="25" r="14" fill="#0C1E3A"/><circle cx="25" cy="25" r="14" fill="none" stroke="url(#lg)" stroke-width="1.4"/>
+        <text x="25" y="29" text-anchor="middle" font-family="serif" font-size="8" font-weight="900" fill="#F0C040" letter-spacing="1">SML</text>
+      </svg>
+      <h1>Admin Dashboard</h1>
+      <p>Sarana Multy Logam &mdash; Panel Manajemen</p>
+    </div>
+    <div class="lb-id-card">
+      <span class="lb-id-icon">&#128274;</span>
+      <div><div class="lb-id-lbl">ID Admin Anda</div><div class="lb-id-val" id="loginIdShow">SML-ADMIN-001</div></div>
+    </div>
+    <div class="lerr" id="lErr"></div>
+    <div class="fg"><label>ID Admin / Username</label><input id="lUser" type="text" placeholder="ID atau username admin"></div>
+    <div class="fg"><label>Password</label><input id="lPass" type="password" placeholder="Password admin" onkeydown="if(event.key===&quot;Enter&quot;)doLogin()"></div>
+    <button class="btn-g" style="width:100%;justify-content:center" onclick="doLogin()">&#128274; Masuk ke Dashboard</button>
+    <p style="text-align:center;font-size:11px;color:var(--mu);margin-top:14px">ID: <strong style="color:var(--g2)">SML-ADMIN-001</strong> &nbsp;|&nbsp; User: <strong style="color:var(--g2)">admin</strong> &nbsp;|&nbsp; Pass: <strong style="color:var(--g2)">sml2024</strong></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app gone" id="appShell">
+
+<!-- SIDEBAR -->
+<aside class="sb" id="SB">
+  <div class="sb-head">
+    <div class="sb-logo">
+      <svg style="width:32px;height:32px;flex-shrink:0" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="slg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#C8961A"/><stop offset="100%" stop-color="#F0C040"/></linearGradient></defs>
+        <circle cx="25" cy="25" r="23" fill="none" stroke="url(#slg)" stroke-width="1.6"/>
+        <g fill="url(#slg)"><rect x="23.2" y="1" width="3.6" height="6" rx="1"/><rect x="23.2" y="43" width="3.6" height="6" rx="1"/><rect x="1" y="23.2" width="6" height="3.6" rx="1"/><rect x="43" y="23.2" width="6" height="3.6" rx="1"/></g>
+        <circle cx="25" cy="25" r="14" fill="#0C1E3A"/><circle cx="25" cy="25" r="14" fill="none" stroke="url(#slg)" stroke-width="1.4"/>
+        <text x="25" y="29" text-anchor="middle" font-family="serif" font-size="8" font-weight="900" fill="#F0C040" letter-spacing="1">SML</text>
+      </svg>
+      <div class="lb-copy">
+        <div class="lb-name">Sarana <em>Multy</em> Logam</div>
+        <span class="lb-sub">Admin Panel v3</span>
+      </div>
+    </div>
+    <button class="sb-tog" onclick="toggleSB()" title="Perluas / Kecilkan">&#8677;</button>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Utama</div>
+    <div class="sb-item on"  onclick="go(this,'dash')"><span class="ic">&#128202;</span><span class="sb-txt">Dashboard</span></div>
+    <div class="sb-item" onclick="go(this,'produk')"><span class="ic">&#9881;</span><span class="sb-txt">Manajemen Produk</span><span class="sb-badge" id="bProd">8</span></div>
+    <div class="sb-item" onclick="go(this,'gambar')"><span class="ic">&#128444;</span><span class="sb-txt">Manajemen Gambar</span></div>
+    <div class="sb-item" onclick="go(this,'video')"><span class="ic">&#127909;</span><span class="sb-txt">Manajemen Video</span></div>
+    <div class="sb-sec">Konten</div>
+    <div class="sb-item" onclick="go(this,'hero')"><span class="ic">&#127968;</span><span class="sb-txt">Section Hero</span></div>
+    <div class="sb-item" onclick="go(this,'marquee')"><span class="ic">&#128226;</span><span class="sb-txt">Marquee Bar</span></div>
+    <div class="sb-item" onclick="go(this,'testi')"><span class="ic">&#11088;</span><span class="sb-txt">Testimoni</span></div>
+    <div class="sb-item" onclick="go(this,'kontak')"><span class="ic">&#128222;</span><span class="sb-txt">Info Kontak</span></div>
+    <div class="sb-sec">Pengunjung</div>
+    <div class="sb-item" onclick="go(this,'users')"><span class="ic">&#128101;</span><span class="sb-txt">Data Pengunjung</span><span class="sb-badge" id="bUsers">0</span></div>
+    <div class="sb-item" onclick="go(this,'chat')"><span class="ic">&#128172;</span><span class="sb-txt">Live Chat</span></div>
+    <div class="sb-sec">Pengaturan</div>
+    <div class="sb-item" onclick="go(this,'builder')"><span class="ic">&#129514;</span><span class="sb-txt">Widget Builder</span></div>
+    <div class="sb-item" onclick="go(this,'tampilan')"><span class="ic">&#127912;</span><span class="sb-txt">Tampilan & Warna</span></div>
+    <div class="sb-item" onclick="go(this,'seo')"><span class="ic">&#128269;</span><span class="sb-txt">SEO & Meta</span></div>
+    <div class="sb-item" onclick="go(this,'akun')"><span class="ic">&#128274;</span><span class="sb-txt">Akun Admin</span></div>
+    <div class="sb-item" onclick="go(this,'backup')"><span class="ic">&#128190;</span><span class="sb-txt">Backup & Export</span></div>
+    <div class="sb-sec">Sistem</div>
+    <div class="sb-item" onclick="window.open('index.html','_blank')"><span class="ic">&#127760;</span><span class="sb-txt">Lihat Website</span></div>
+    <div class="sb-item" onclick="doLogout()"><span class="ic">&#128682;</span><span class="sb-txt">Keluar</span></div>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-user">
+      <div class="sb-av" id="sbAv">A</div>
+      <div class="sb-uinfo"><strong id="sbName">Administrator</strong><span>Super Admin</span></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-area" id="mainArea">
+<div class="topbar">
+  <div class="tb-l">
+    <button class="tb-mob" onclick="document.getElementById('SB').classList.toggle('mob-open')">&#9776;</button>
+    <div class="tb-title" id="tbTitle">Dashboard</div>
+  </div>
+  <div class="tb-r">
+    <div class="tb-live"><span class="tb-dot"></span>Live</div>
+    <button class="tb-btn" onclick="window.open('index.html','_blank')">&#127760; Preview</button>
+    <button class="tb-btn" onclick="saveAll()">&#128190; Simpan</button>
+    <button class="tb-btn" onclick="doLogout()">&#128682; Keluar</button>
+  </div>
+</div>
+<div class="content">
+
+<!-- DASHBOARD -->
+<div class="pg on" id="pg-dash">
+  <div class="stats">
+    <div class="sc"><div class="sc-top"><div class="sc-ico">&#128230;</div><span class="sc-tr" id="stP">aktif</span></div><div class="sc-val" id="svP">8</div><div class="sc-lbl">Total Produk</div></div>
+    <div class="sc"><div class="sc-top"><div class="sc-ico">&#128101;</div><span class="sc-tr" id="stU">0</span></div><div class="sc-val" id="svU">0</div><div class="sc-lbl">Pengunjung Daftar</div></div>
+    <div class="sc"><div class="sc-top"><div class="sc-ico">&#128172;</div><span class="sc-tr">Live</span></div><div class="sc-val" id="svC">0</div><div class="sc-lbl">Pesan Chat</div></div>
+    <div class="sc"><div class="sc-top"><div class="sc-ico">&#127909;</div><span class="sc-tr" id="stV">6</span></div><div class="sc-val" id="svV">6</div><div class="sc-lbl">Video Tersedia</div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ch"><div class="ct">&#128200; Pengunjung 7 Hari</div></div><div class="chart-bars" id="chartBars"></div><div class="chart-lbl" id="chartLbl"></div></div>
+    <div class="card"><div class="ch"><div class="ct">&#128293; Produk Paling Ditanya</div></div><div id="hotProd"></div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><div class="ct">&#9889; Aksi Cepat</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn-g" onclick="go(getSBItem('produk'),'produk')" style="justify-content:center;font-size:12px">+ Produk</button>
+        <button class="btn-g" onclick="go(getSBItem('video'),'video')" style="justify-content:center;font-size:12px">+ Video</button>
+        <button class="btn-s" onclick="go(getSBItem('chat'),'chat')" style="justify-content:center;font-size:12px">Live Chat</button>
+        <button class="btn-s" onclick="go(getSBItem('users'),'users')" style="justify-content:center;font-size:12px">Pengunjung</button>
+      </div>
+    </div>
+    <div class="card"><div class="ch"><div class="ct">&#128203; Status Sistem</div></div><div id="statusPanel"></div></div>
+  </div>
+</div>
+
+<!-- PRODUK -->
+<div class="pg" id="pg-produk">
+  <div class="card">
+    <div class="ch"><div class="ct">+ Tambah / Edit Produk</div><button class="ca" onclick="resetP()">Baru</button></div>
+    <input type="hidden" id="eId">
+    <div class="fg2"><div class="fg"><label>Nama Produk</label><input id="pN" placeholder="Nama produk"></div><div class="fg"><label>Harga</label><input id="pH" placeholder="Rp 4.500.000"></div></div>
+    <div class="fg"><label>Deskripsi</label><textarea id="pD" placeholder="Deskripsi singkat"></textarea></div>
+    <div class="fg3"><div class="fg"><label>Spec 1</label><input id="pS1" placeholder="Stainless 304"></div><div class="fg"><label>Spec 2</label><input id="pS2" placeholder="25-200 Kg"></div><div class="fg"><label>Spec 3</label><input id="pS3" placeholder="Bermotor"></div></div>
+    <div class="fg2"><div class="fg"><label>Badge</label><input id="pB" placeholder="Terlaris"></div><div class="fg"><label>File Gambar</label><input id="pI" placeholder="mesin-mixer.jpg"></div></div>
+    <div class="fg"><label>Kategori Halaman</label>
+      <select id="pCat">
+        <option value="cat-pengaduk">Mesin Pengaduk</option>
+        <option value="cat-wajan">Wajan dan Kuali</option>
+        <option value="cat-peniris">Peniris dan Snack</option>
+        <option value="cat-pabrik">Paket Pabrik</option>
+        <option value="cat-perabot">Perabot Industri</option>
+      </select>
+    </div>
+    <div class="tg-row"><label class="tg"><input type="checkbox" id="pA" checked><span class="tg-sl"></span></label><span class="tg-lbl">Tampilkan di website</span></div>
+    <div style="display:flex;gap:8px"><button class="btn-g" onclick="saveP()">Simpan Produk</button><button class="btn-s" onclick="resetP()">Batal</button></div>
+  </div>
+  <div class="card">
+    <div class="ch">
+      <div class="ct">Daftar Produk</div>
+      <input style="background:rgba(255,255,255,.05);border:1px solid rgba(200,150,26,.14);border-radius:7px;padding:6px 11px;color:var(--wh);font-size:12px;outline:none;width:180px" placeholder="Cari..." oninput="filterP(this.value)">
+    </div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Img</th><th>Nama</th><th>Harga</th><th>Kategori</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="PTB"></tbody></table></div>
+  </div>
+</div>
+
+<!-- GAMBAR -->
+<div class="pg" id="pg-gambar">
+  <div class="card">
+    <div class="ch"><div class="ct">Upload Gambar</div><span style="font-size:12px;color:var(--mu)">JPG/PNG max 5MB</span></div>
+    <div style="border:2px dashed rgba(200,150,26,.3);border-radius:12px;padding:26px;text-align:center;cursor:pointer;background:rgba(200,150,26,.04)" onclick="document.getElementById('imgF').click()">
+      <input type="file" id="imgF" accept="image/*" multiple style="display:none" onchange="handleUpload(this)">
+      <div style="font-size:30px;margin-bottom:9px">&#128193;</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px">Klik untuk pilih gambar</div>
+      <div style="font-size:12px;color:var(--mu)">Drag &amp; drop juga bisa</div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><div class="ct">Library Gambar</div></div><div class="img-grid" id="imgGrid"></div></div>
+  <div class="card">
+    <div class="ch"><div class="ct">Gambar Hero</div></div>
+    <div class="fg">
+      <label>Pilih untuk Hero</label>
+      <select id="hSel" onchange="document.getElementById('hPv').src=this.value">
+        <option value="img/mesin-mixer.jpg">mesin-mixer.jpg</option>
+        <option value="img/mesin-snack.jpg">mesin-snack.jpg</option>
+        <option value="img/wajan-besar.jpg">wajan-besar.jpg</option>
+        <option value="img/tahang.jpg">tahang.jpg</option>
+        <option value="img/mesin-giling.jpg">mesin-giling.jpg</option>
+        <option value="img/mesin-dodol.jpg">mesin-dodol.jpg</option>
+        <option value="img/rak-dapur.jpg">rak-dapur.jpg</option>
+        <option value="img/wajan-stainless.jpg">wajan-stainless.jpg</option>
+      </select>
+    </div>
+    <div style="border-radius:10px;overflow:hidden;border:1px solid var(--bd);max-width:320px;margin-top:8px"><img id="hPv" src="img/mesin-mixer.jpg" style="width:100%;height:150px;object-fit:cover" onerror="this.remove()"></div>
+    <button class="btn-g" style="margin-top:11px" onclick="LS.set('sml_heroImg',document.getElementById('hSel').value);notify('Gambar hero disimpan','ok')">Terapkan ke Hero</button>
+  </div>
+</div>
+
+<!-- VIDEO -->
+<div class="pg" id="pg-video">
+  <div class="card">
+    <div class="ch"><div class="ct">Tambah Video</div></div>
+    <div class="fg2">
+      <div class="fg"><label>Judul Video</label><input id="vT" placeholder="Judul video"></div>
+      <div class="fg"><label>Tipe</label><select id="vType"><option value="demo">Demo Produk</option><option value="tutorial">Tutorial</option><option value="testi">Testimoni</option></select></div>
+    </div>
+    <div class="fg"><label>Deskripsi</label><textarea id="vD" placeholder="Deskripsi singkat"></textarea></div>
+    <div class="fg2">
+      <div class="fg"><label>Sumber</label><select id="vSrc" onchange="vidSrcToggle(this.value)"><option value="youtube">YouTube</option><option value="local">Video Lokal</option></select></div>
+      <div class="fg" id="ytRow"><label>URL YouTube</label><input id="vUrl" placeholder="https://youtube.com/watch?v=..."></div>
+    </div>
+    <div class="fg" id="localRow" style="display:none"><label>Upload Video</label><input type="file" id="vFile" accept="video/*" style="padding:9px;background:rgba(255,255,255,.05);border:1px solid rgba(200,150,26,.15);border-radius:8px;color:var(--wh)"></div>
+    <div class="fg"><label>Thumbnail</label><input id="vThumb" placeholder="img/mesin-mixer.jpg atau URL thumbnail"></div>
+    <button class="btn-g" onclick="saveVid()">Simpan Video</button>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">Daftar Video</div></div>
+    <div style="display:flex;gap:7px;margin-bottom:14px">
+      <button class="ca" onclick="filterVidAdmin('all',this)">Semua</button>
+      <button class="ca" onclick="filterVidAdmin('demo',this)">Demo</button>
+      <button class="ca" onclick="filterVidAdmin('tutorial',this)">Tutorial</button>
+      <button class="ca" onclick="filterVidAdmin('testi',this)">Testimoni</button>
+    </div>
+    <div id="vidList"></div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="pg" id="pg-hero">
+  <div class="card">
+    <div class="ch"><div class="ct">Konten Section Hero</div></div>
+    <div class="fg"><label>Badge Text</label><input id="hBadge" value="Produsen Mesin Industri - Bandung, Jawa Barat"></div>
+    <div class="fg3">
+      <div class="fg"><label>Judul Baris 1</label><input id="hL1" value="SOLUSI MESIN"></div>
+      <div class="fg"><label>Baris 2 (outline)</label><input id="hL2" value="HOME INDUSTRY"></div>
+      <div class="fg"><label>Baris 3 (emas)</label><input id="hL3" value="BERKUALITAS"></div>
+    </div>
+    <div class="fg"><label>Deskripsi Hero</label><textarea id="hDesc">Dari wajan raksasa, mesin pengaduk, peniris minyak, hingga paket lengkap pabrik tahu, dodol dan kerupuk. Stainless food grade premium, harga pabrik langsung.</textarea></div>
+    <div class="fg2">
+      <div class="fg"><label>Tombol Utama</label><input id="hB1" value="Lihat Katalog Produk"></div>
+      <div class="fg"><label>Tombol Kedua</label><input id="hB2" value="Chat Langsung"></div>
+    </div>
+    <button class="btn-g" onclick="notify('Hero disimpan','ok');addLog('Hero diperbarui')">Simpan Hero</button>
+  </div>
+</div>
+
+<!-- MARQUEE -->
+<div class="pg" id="pg-marquee">
+  <div class="card">
+    <div class="ch"><div class="ct">Pengaturan Marquee Bar</div></div>
+    <div class="fg2">
+      <div class="fg"><label>Kecepatan <span id="mqSpV" style="color:var(--g2)">32s</span></label><input type="range" id="mqSp" min="10" max="60" value="32" style="width:100%;accent-color:var(--g2)" oninput="document.getElementById('mqSpV').textContent=this.value+'s'"></div>
+      <div class="fg"><label>Tema</label><select id="mqTheme"><option value="gold">Gold (Default)</option><option value="navy">Navy Dark</option></select></div>
+    </div>
+    <div class="tg-row"><label class="tg"><input type="checkbox" id="mqOn" checked><span class="tg-sl"></span></label><span class="tg-lbl">Tampilkan Marquee Bar</span></div>
+    <div style="font-size:10.5px;font-weight:700;color:var(--g1);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Daftar Teks</div>
+    <div id="mqList"></div>
+    <div style="display:flex;gap:8px;margin-top:11px">
+      <input id="mqNew" style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(200,150,26,.15);border-radius:8px;padding:9px 12px;color:var(--wh);font-size:13px;outline:none" placeholder="Teks baru...">
+      <button class="btn-g" onclick="addMq()">Tambah</button>
+    </div>
+    <button class="btn-g" style="margin-top:11px" onclick="saveMq()">Simpan Marquee</button>
+  </div>
+</div>
+
+<!-- TESTIMONI -->
+<div class="pg" id="pg-testi">
+  <div class="card">
+    <div class="ch"><div class="ct">Tambah Testimoni</div></div>
+    <div class="fg2"><div class="fg"><label>Nama</label><input id="tN" placeholder="Nama pelanggan"></div><div class="fg"><label>Asal / Usaha</label><input id="tA" placeholder="Pengusaha Dodol, Garut"></div></div>
+    <div class="fg"><label>Rating</label><select id="tR"><option>5 bintang</option><option>4 bintang</option><option>3 bintang</option></select></div>
+    <div class="fg"><label>Isi Testimoni</label><textarea id="tT" placeholder="Isi testimoni pelanggan..."></textarea></div>
+    <button class="btn-g" onclick="addTesti()">Tambah Testimoni</button>
+  </div>
+  <div class="card"><div class="ch"><div class="ct">Daftar Testimoni</div></div><div id="testiContainer"></div></div>
+</div>
+
+<!-- KONTAK -->
+<div class="pg" id="pg-kontak">
+  <div class="card">
+    <div class="ch"><div class="ct">Info Kontak Perusahaan</div></div>
+    <div class="fg"><label>Alamat</label><textarea id="kAdr" style="min-height:60px">Jl. Cibuntu Tengah 1 RT 04/09, Bandung, Jawa Barat</textarea></div>
+    <div class="fg2"><div class="fg"><label>No WA (628...)</label><input id="kWA" value="6285371526068"></div><div class="fg"><label>Tampil di Web</label><input id="kTelp" value="0853-7152-6068"></div></div>
+    <div class="fg2"><div class="fg"><label>Email</label><input type="email" id="kEmail" value="saranamulty0409@gmail.com"></div><div class="fg"><label>Jam Buka</label><input id="kJam" value="Senin-Sabtu: 08.00-17.00 WIB"></div></div>
+    <button class="btn-g" onclick="notify('Kontak disimpan','ok');addLog('Kontak diperbarui')">Simpan Kontak</button>
+  </div>
+</div>
+
+<!-- USERS -->
+<div class="pg" id="pg-users">
+  <div class="card">
+    <div class="ch"><div class="ct">Data Pengunjung Terdaftar</div><button class="ca" onclick="exportUsers()">Export CSV</button></div>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>ID</th><th>Nama</th><th>Email</th><th>WA</th><th>Daftar</th><th>Aksi</th></tr></thead><tbody id="userTB"></tbody></table></div>
+  </div>
+</div>
+
+<!-- LIVE CHAT -->
+<div class="pg" id="pg-chat">
+  <div class="card">
+    <div class="ch">
+      <div class="ct">Live Chat Pengunjung</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="chatStatus" style="font-size:12px;color:var(--mu)">-</span>
+        <button class="ca" onclick="loadChats()">Refresh</button>
+      </div>
+    </div>
+    <div class="chat-panel">
+      <div class="session-list" id="sessionList"><div style="padding:20px;text-align:center;color:var(--mu);font-size:13px">Memuat...</div></div>
+      <div class="chat-win">
+        <div class="cw-head"><div class="cw-name" id="cwName">Pilih percakapan</div><div class="cw-sub" id="cwSub">Klik nama di sebelah kiri</div></div>
+        <div class="cw-msgs" id="cwMsgs"><div style="text-align:center;color:var(--mu);font-size:13px;padding:40px 0">Pilih percakapan</div></div>
+        <div class="cw-input">
+          <input id="adminMsg" placeholder="Tulis balasan..." onkeydown="if(event.key===&quot;Enter&quot;)sendAdminMsg()">
+          <button class="btn-g" onclick="sendAdminMsg()" style="padding:10px 18px">Kirim</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WIDGET BUILDER -->
+<div class="pg" id="pg-builder">
+  <div class="card">
+    <div class="ch"><div class="ct">Widget Builder - Susun Halaman Website</div></div>
+    <p style="font-size:13px;color:var(--mu);margin-bottom:14px">Tambah dan susun urutan widget yang tampil di website. Klik untuk tambah ke canvas, gunakan tombol naik/turun untuk mengatur posisi.</p>
+    <div style="font-size:10.5px;font-weight:700;color:var(--g1);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Tambah Widget</div>
+    <div class="palette-grid" id="palGrid"></div>
+    <div style="font-size:10.5px;font-weight:700;color:var(--g1);letter-spacing:1px;text-transform:uppercase;margin:16px 0 10px">Canvas Halaman (Urutan Tampil)</div>
+    <div class="canvas-area" id="canvasArea"></div>
+    <button class="btn-g" onclick="saveBuilder()">Simpan Susunan</button>
+  </div>
+</div>
+
+<!-- TAMPILAN -->
+<div class="pg" id="pg-tampilan">
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><div class="ct">Palet Warna</div></div>
+      <div class="fg"><label>Navy Utama</label><div style="display:flex;align-items:center;gap:10px"><input type="color" id="cN" value="#081426" style="width:48px;height:36px;border:none;background:none;cursor:pointer"><input id="cNTxt" value="#081426" style="width:90px;font-size:12px;padding:6px 8px"></div></div>
+      <div class="fg"><label>Gold Utama</label><div style="display:flex;align-items:center;gap:10px"><input type="color" id="cG" value="#C8961A" style="width:48px;height:36px;border:none;background:none;cursor:pointer"><input id="cGTxt" value="#C8961A" style="width:90px;font-size:12px;padding:6px 8px"></div></div>
+      <div class="fg"><label>Gold Terang</label><div style="display:flex;align-items:center;gap:10px"><input type="color" id="cG2" value="#F0C040" style="width:48px;height:36px;border:none;background:none;cursor:pointer"><input id="cG2Txt" value="#F0C040" style="width:90px;font-size:12px;padding:6px 8px"></div></div>
+      <div style="display:flex;gap:7px;margin-top:8px"><div id="pN" style="width:44px;height:44px;background:#081426;border-radius:8px;border:1px solid var(--bd)"></div><div id="pG" style="width:44px;height:44px;background:#C8961A;border-radius:8px"></div><div id="pG2" style="width:44px;height:44px;background:#F0C040;border-radius:8px"></div></div>
+      <button class="btn-g" style="margin-top:14px" onclick="notify('Warna disimpan','ok')">Simpan Warna</button>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">Toggle Fitur</div></div>
+      <div class="tg-row"><label class="tg"><input type="checkbox" checked><span class="tg-sl"></span></label><span class="tg-lbl">Marquee Bar</span></div>
+      <div class="tg-row"><label class="tg"><input type="checkbox" checked><span class="tg-sl"></span></label><span class="tg-lbl">Chat Widget</span></div>
+      <div class="tg-row"><label class="tg"><input type="checkbox" checked><span class="tg-sl"></span></label><span class="tg-lbl">Login Pengunjung</span></div>
+      <div class="tg-row"><label class="tg"><input type="checkbox" checked><span class="tg-sl"></span></label><span class="tg-lbl">Halaman Video</span></div>
+      <div class="tg-row"><label class="tg"><input type="checkbox" checked><span class="tg-sl"></span></label><span class="tg-lbl">Scroll Reveal</span></div>
+      <button class="btn-g" style="margin-top:14px" onclick="notify('Pengaturan disimpan','ok')">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- SEO -->
+<div class="pg" id="pg-seo">
+  <div class="card">
+    <div class="ch"><div class="ct">SEO dan Meta Tags</div></div>
+    <div class="fg"><label>Judul Halaman</label><input id="sT" value="Sarana Multy Logam - Mesin Industri Home Industry Bandung"></div>
+    <div class="fg"><label>Meta Deskripsi (max 160 karakter)</label><textarea id="sD" style="min-height:60px">Produsen mesin industri terpercaya Bandung. Wajan besar, mesin pengaduk, pabrik tahu, dodol, kerupuk. Kirim seluruh Indonesia.</textarea></div>
+    <div class="fg"><label>Keywords</label><input id="sK" value="mesin industri bandung, wajan besar, mesin pengaduk dodol, pabrik tahu"></div>
+    <div class="fg2"><div class="fg"><label>Google Analytics ID</label><input id="sGA" placeholder="G-XXXXXXXXXX"></div><div class="fg"><label>OG Image</label><input id="sOG" value="img/mesin-mixer.jpg"></div></div>
+    <button class="btn-g" onclick="notify('SEO disimpan','ok');addLog('SEO diperbarui')">Simpan SEO</button>
+  </div>
+</div>
+
+<!-- AKUN -->
+<div class="pg" id="pg-akun">
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><div class="ct">Identitas Admin</div></div>
+      <div style="background:linear-gradient(135deg,var(--n3),var(--n4));border:1px solid rgba(200,150,26,.3);border-radius:14px;padding:22px;margin-bottom:18px">
+        <div style="font-size:10px;font-weight:700;color:var(--g1);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">ID Admin</div>
+        <div id="aIdShow" style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--g2);letter-spacing:1.5px;margin-bottom:8px">SML-ADMIN-001</div>
+        <div id="aUserShow" style="font-size:14px;color:var(--wh);font-weight:600">admin</div>
+        <div id="aEmailShow" style="font-size:12px;color:var(--mu);margin-top:2px">saranamulty0409@gmail.com</div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(200,150,26,.15);font-size:11px;color:var(--mu)">Gunakan ID, username, atau email untuk login</div>
+      </div>
+      <div class="fg"><label>Username Baru</label><input id="aUser" placeholder="Username baru"></div>
+      <div class="fg"><label>Email Admin</label><input type="email" id="aEmail" placeholder="email@admin.com"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">Ganti Password</div></div>
+      <div class="fg"><label>Password Lama</label><input type="password" id="aOld" placeholder="Password saat ini"></div>
+      <div class="fg"><label>Password Baru</label><input type="password" id="aNew" placeholder="Password baru (min 6 karakter)"></div>
+      <div class="fg"><label>Konfirmasi Baru</label><input type="password" id="aNew2" placeholder="Ulangi password baru" onkeydown="if(event.key===&quot;Enter&quot;)changePass()"></div>
+      <button class="btn-g" style="width:100%;justify-content:center" onclick="changePass()">Perbarui Akun</button>
+    </div>
+  </div>
+</div>
+
+<!-- BACKUP -->
+<div class="pg" id="pg-backup">
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><div class="ct">Backup dan Restore</div></div>
+      <p style="font-size:13px;color:var(--mu);margin-bottom:16px">Export semua data ke JSON untuk backup atau migrasi.</p>
+      <button class="btn-g" style="width:100%;justify-content:center;margin-bottom:9px" onclick="exportAll()">Download Backup JSON</button>
+      <button class="btn-s" style="width:100%;justify-content:center" onclick="document.getElementById('impF').click()">Import Backup</button>
+      <input type="file" id="impF" accept=".json" style="display:none" onchange="importAll(this)">
+      <div style="margin-top:16px;padding:12px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.14);border-radius:9px">
+        <div style="font-size:11.5px;font-weight:700;color:var(--re);margin-bottom:7px">Reset ke Default</div>
+        <button class="btn-r" onclick="resetAll()">Reset Semua Data</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">Log Aktivitas</div><button class="ca" onclick="clearLog()">Bersihkan</button></div>
+      <div id="logPanel" style="max-height:320px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+/* == STORAGE == */
+var LS = {
+  get: function(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } },
+  set: function(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+};
+
+/* == API == */
+var API = "/.netlify/functions";
+
+/* == ADMIN CREDENTIALS == */
+var adminCreds = LS.get("sml_admin") || {id:"SML-ADMIN-001",user:"admin",email:"saranamulty0409@gmail.com",pass:"sml2024"};
+var adminLoggedIn = LS.get("sml_adminSess") || false;
+
+/* == DEFAULT DATA == */
+var DEF_P = [
+  {id:1,n:"Mesin Mixer / Pengaduk Adonan",h:"Rp 4.500.000",d:"Motor listrik, kapasitas 25-200 kg.",s1:"Stainless 304",s2:"25-200 Kg",s3:"Bermotor",b:"Terlaris",i:"img/mesin-mixer.jpg",cat:"cat-pengaduk",a:true},
+  {id:2,n:"Mesin Pengolah Snack dan Kerupuk",h:"Rp 3.800.000",d:"Conveyor + wajan stainless.",s1:"Semi Otomatis",s2:"Conveyor",s3:"Custom",b:"Best Seller",i:"img/mesin-snack.jpg",cat:"cat-peniris",a:true},
+  {id:3,n:"Wajan Besar / Kuali Industri",h:"Rp 1.800.000",d:"Besi dan stainless, diameter 60-200 cm.",s1:"Besi/Stainless",s2:"60-200cm",s3:"Custom",b:"Custom Size",i:"img/wajan-besar.jpg",cat:"cat-wajan",a:true},
+  {id:4,n:"Tahang / Panci Besar Stainless",h:"Rp 2.200.000",d:"Food grade untuk tahu, susu kedelai.",s1:"Food Grade",s2:"Tahan Panas",s3:"Custom",b:"",i:"img/tahang.jpg",cat:"cat-wajan",a:true},
+  {id:5,n:"Mesin Penggiling dan Pengolah",h:"Rp 3.200.000",d:"Menggiling kedelai, bumbu. Motor 1-5 HP.",s1:"1-5 HP",s2:"Hasil Halus",s3:"Industri",b:"",i:"img/mesin-giling.jpg",cat:"cat-pengaduk",a:true},
+  {id:6,n:"Mesin Pengaduk Dodol",h:"Rp 6.500.000",d:"Pengaduk otomatis bermotor.",s1:"Bermotor",s2:"Otomatis",s3:"Custom",b:"",i:"img/mesin-dodol.jpg",cat:"cat-pengaduk",a:true},
+  {id:7,n:"Rak dan Meja Dapur Industri",h:"Rp 1.500.000",d:"Stainless food grade, custom ukuran.",s1:"Stainless 304",s2:"Anti Karat",s3:"Custom",b:"",i:"img/rak-dapur.jpg",cat:"cat-perabot",a:true},
+  {id:8,n:"Paket Pabrik Tahu Lengkap",h:"Harga Paket",d:"Set lengkap untuk pabrik tahu.",s1:"Set Lengkap",s2:"UMKM",s3:"Konsultasi",b:"Paket Lengkap",i:"img/wajan-stainless.jpg",cat:"cat-pabrik",a:true}
+];
+var DEF_MQ = ["Mesin Mixer Adonan","Wajan Besar Industri","Mesin Pengaduk Dodol","Tahang Stainless Food Grade","Mesin Peniris Minyak","Paket Pabrik Tahu Lengkap","Rak Dapur Industri","Kirim Seluruh Indonesia","Chat Langsung di Website"];
+var DEF_T = [
+  {n:"Bapak Hendra S.",a:"Pengusaha Dodol, Garut",r:"5 bintang",t:"Wajan stainless sesuai spesifikasi. 2 tahun dipakai, tidak ada masalah!"},
+  {n:"Ibu Sari W.",a:"Pabrik Kerupuk, Indramayu",r:"5 bintang",t:"Harga kompetitif, kualitas tidak kalah. Pelayanan responsif."},
+  {n:"Pak Ahmad F.",a:"Produsen Tahu, Sumedang",r:"5 bintang",t:"Paket tahu lengkap, produksi naik 3x lipat!"},
+  {n:"Deni K.",a:"Pengusaha Kuliner, Bekasi",r:"5 bintang",t:"Sudah 3x order. Pengiriman ke Surabaya aman."},
+  {n:"Yusuf M.",a:"Pabrik Bumbu, Bandung",r:"5 bintang",t:"Mesin penggiling 5x lebih cepat dari manual."},
+  {n:"Ibu Ratih P.",a:"Produksi Susu Kedelai, Cirebon",r:"5 bintang",t:"Tahang stainless sangat higienis."}
+];
+var DEF_V = [
+  {id:1,title:"Demo Mesin Mixer Adonan 100 Kg",desc:"Demo langsung di workshop.",type:"demo",src:"local",thumb:"img/mesin-mixer.jpg",url:""},
+  {id:2,title:"Cara Kerja Mesin Pengaduk Dodol",desc:"Tutorial mesin pengaduk bermotor.",type:"tutorial",src:"youtube",thumb:"https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",url:"https://www.youtube.com/embed/dQw4w9WgXcQ"},
+  {id:3,title:"Testimoni Bapak Ahmad - Pabrik Tahu",desc:"Review paket mesin pabrik tahu.",type:"testi",src:"youtube",thumb:"https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",url:"https://www.youtube.com/embed/dQw4w9WgXcQ"},
+  {id:4,title:"Review Wajan Besar 1.5 Meter",desc:"Review wajan besi industri.",type:"testi",src:"local",thumb:"img/wajan-besar.jpg",url:""},
+  {id:5,title:"Demo Mesin Peniris Minyak Kerupuk",desc:"Demo peniris otomatis.",type:"demo",src:"local",thumb:"img/mesin-snack.jpg",url:""},
+  {id:6,title:"Tutorial Perawatan Tahang Stainless",desc:"Cara membersihkan tahang.",type:"tutorial",src:"youtube",thumb:"https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",url:"https://www.youtube.com/embed/dQw4w9WgXcQ"}
+];
+var DEF_W = [
+  {id:"hero",icon:"H",name:"Section Hero",desc:"Judul besar, gambar, statistik"},
+  {id:"categories",icon:"K",name:"Kategori Produk",desc:"Grid shortcut 6 kategori"},
+  {id:"featured",icon:"B",name:"Produk Unggulan",desc:"4 produk pilihan di beranda"},
+  {id:"why",icon:"C",name:"Mengapa Kami",desc:"6 keunggulan perusahaan"},
+  {id:"testimonials",icon:"T",name:"Testimoni",desc:"Grid testimoni pelanggan"},
+  {id:"video",icon:"V",name:"Video Highlight",desc:"3 video teratas di beranda"},
+  {id:"coverage",icon:"P",name:"Area Pengiriman",desc:"Bar daftar provinsi"},
+  {id:"cta",icon:"A",name:"Banner CTA",desc:"Banner ajak konsultasi"},
+  {id:"blog",icon:"R",name:"Artikel Tips",desc:"Konten edukasi pelanggan"}
+];
+var IMG_LIST = ["img/mesin-mixer.jpg","img/mesin-snack.jpg","img/wajan-besar.jpg","img/tahang.jpg","img/mesin-giling.jpg","img/mesin-dodol.jpg","img/rak-dapur.jpg","img/wajan-stainless.jpg","img/wajan-stainless-extra.jpg"];
+
+/* == LIVE DATA == */
+var prods   = LS.get("sml_products") || DEF_P;
+var mqArr   = LS.get("sml_marquee")  || DEF_MQ;
+var testiArr= LS.get("sml_testi")    || DEF_T;
+var videos  = LS.get("sml_videos")   || DEF_V;
+var wLayout = LS.get("sml_widgets")  || ["hero","categories","featured","why","testimonials","coverage"];
+var logs    = LS.get("sml_log")      || [];
+var activeSession = null;
+var chatPoll = null;
+
+/* == LOGIN == */
+function doLogin(){
+  var u = document.getElementById("lUser").value.trim();
+  var p = document.getElementById("lPass").value;
+  var err = document.getElementById("lErr");
+  err.classList.remove("show");
+  if(!u || !p){ err.textContent = "Isi ID dan password."; err.classList.add("show"); return; }
+  var ok = (u === adminCreds.id || u === adminCreds.user || u === adminCreds.email) && p === adminCreds.pass;
+  if(ok){
+    adminLoggedIn = true;
+    LS.set("sml_adminSess", true);
+    document.getElementById("loginWrap").classList.add("gone");
+    document.getElementById("appShell").classList.remove("gone");
+    document.getElementById("sbAv").textContent = adminCreds.user.charAt(0).toUpperCase();
+    document.getElementById("sbName").textContent = adminCreds.user;
+    renderDash();
+    addLog("Login admin berhasil");
+  } else {
+    err.textContent = "ID atau password salah.";
+    err.classList.add("show");
+  }
+}
+function doLogout(){
+  if(!confirm("Keluar dari dashboard?")) return;
+  adminLoggedIn = false;
+  LS.set("sml_adminSess", false);
+  document.getElementById("loginWrap").classList.remove("gone");
+  document.getElementById("appShell").classList.add("gone");
+}
+function changePass(){
+  var op = document.getElementById("aOld").value;
+  var np = document.getElementById("aNew").value;
+  var np2= document.getElementById("aNew2").value;
+  if(op !== adminCreds.pass){ notify("Password lama salah","err"); return; }
+  if(np.length < 6){ notify("Password baru minimal 6 karakter","err"); return; }
+  if(np !== np2){ notify("Konfirmasi password tidak cocok","err"); return; }
+  var nu = document.getElementById("aUser").value.trim() || adminCreds.user;
+  var ne = document.getElementById("aEmail").value.trim() || adminCreds.email;
+  adminCreds = {id:adminCreds.id, user:nu, email:ne, pass:np};
+  LS.set("sml_admin", adminCreds);
+  document.getElementById("sbName").textContent = nu;
+  document.getElementById("sbAv").textContent = nu.charAt(0).toUpperCase();
+  document.getElementById("aIdShow").textContent = adminCreds.id;
+  document.getElementById("aUserShow").textContent = nu;
+  document.getElementById("aEmailShow").textContent = ne;
+  notify("Akun admin diperbarui","ok");
+  addLog("Password admin diganti");
+  ["aOld","aNew","aNew2"].forEach(function(id){ document.getElementById(id).value = ""; });
+}
+
+/* == SIDEBAR TOGGLE == */
+function toggleSB(){
+  var sb = document.getElementById("SB");
+  var ma = document.getElementById("mainArea");
+  sb.classList.toggle("slim");
+  ma.classList.toggle("wide");
+  LS.set("sml_slim", sb.classList.contains("slim"));
+}
+
+/* == NAV == */
+function go(el, id){
+  document.querySelectorAll(".pg").forEach(function(p){ p.classList.remove("on"); });
+  var pg = document.getElementById("pg-"+id);
+  if(pg) pg.classList.add("on");
+  document.querySelectorAll(".sb-item").forEach(function(i){ i.classList.remove("on"); });
+  if(el) el.classList.add("on");
+  var txt = el ? (el.querySelector(".sb-txt") || el).textContent.trim() : id;
+  document.getElementById("tbTitle").textContent = txt;
+  document.getElementById("SB").classList.remove("mob-open");
+  // Page-specific init
+  if(id === "dash")    renderDash();
+  if(id === "produk")  renderProds();
+  if(id === "gambar")  renderImgs();
+  if(id === "video")   renderVidAdmin("all");
+  if(id === "testi")   renderTesti();
+  if(id === "marquee") renderMq();
+  if(id === "users")   renderUsers();
+  if(id === "builder") renderBuilder();
+  if(id === "backup")  renderLog();
+  if(id === "akun"){
+    document.getElementById("aUser").value = adminCreds.user;
+    document.getElementById("aEmail").value = adminCreds.email || "";
+    document.getElementById("aIdShow").textContent = adminCreds.id;
+    document.getElementById("aUserShow").textContent = adminCreds.user;
+    document.getElementById("aEmailShow").textContent = adminCreds.email || "";
+  }
+  if(id === "chat"){
+    loadChats();
+    if(chatPoll) clearInterval(chatPoll);
+    chatPoll = setInterval(loadChats, 10000);
+  } else {
+    if(chatPoll){ clearInterval(chatPoll); chatPoll = null; }
+  }
+}
+function getSBItem(id){
+  var items = document.querySelectorAll(".sb-item");
+  for(var i=0;i<items.length;i++){
+    var onclick = items[i].getAttribute("onclick") || "";
+    if(onclick.indexOf("'"+id+"'") > -1) return items[i];
+  }
+  return null;
+}
+
+/* == DASHBOARD == */
+function renderDash(){
+  var visits = [182,240,198,310,278,355,290];
+  var days   = ["Sen","Sel","Rab","Kam","Jum","Sab","Min"];
+  var mx     = Math.max.apply(null, visits);
+  var cb = document.getElementById("chartBars");
+  var cl = document.getElementById("chartLbl");
+  if(!cb) return;
+  cb.innerHTML = ""; cl.innerHTML = "";
+  for(var i=0;i<visits.length;i++){
+    var b = document.createElement("div");
+    b.className = "bar";
+    b.style.height = "4px";
+    b.title = days[i] + ": " + visits[i];
+    cb.appendChild(b);
+    var pct = (visits[i]/mx*100);
+    (function(el,h){ setTimeout(function(){ el.style.height = h+"%"; }, i*80); })(b, pct);
+    var lb = document.createElement("span");
+    lb.textContent = days[i];
+    cl.appendChild(lb);
+  }
+  var tops  = ["Mesin Mixer","Wajan Besar","Paket Tahu","Mesin Dodol","Tahang"];
+  var pcts  = [92,78,65,54,41];
+  var hp = document.getElementById("hotProd");
+  if(hp){
+    var html = "";
+    for(var j=0;j<tops.length;j++){
+      html += '<div style="margin-bottom:11px">';
+      html += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">';
+      html += '<span style="color:#B8CAE0">'+tops[j]+'</span>';
+      html += '<span style="color:#E8AE28;font-weight:700">'+pcts[j]+'%</span>';
+      html += '</div>';
+      html += '<div style="height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden">';
+      html += '<div style="height:100%;width:'+pcts[j]+'%;background:linear-gradient(90deg,#C8961A,#F0C040);border-radius:3px;transition:width 1s ease"></div>';
+      html += '</div></div>';
+    }
+    hp.innerHTML = html;
+  }
+  var users = LS.get("sml_users") || [];
+  document.getElementById("svP").textContent = prods.length;
+  document.getElementById("svU").textContent = users.length;
+  document.getElementById("svV").textContent = videos.length;
+  document.getElementById("bProd").textContent = prods.length;
+  document.getElementById("bUsers").textContent = users.length;
+  var sp = document.getElementById("statusPanel");
+  if(sp){
+    var items = ["Website Online","Chat Widget Aktif","Marquee Bar Aktif","SSL Certificate"];
+    var shtml = "";
+    for(var k=0;k<items.length;k++){
+      shtml += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.13);border-radius:7px;margin-bottom:8px">';
+      shtml += '<span style="font-size:12px;color:#B8CAE0">'+items[k]+'</span>';
+      shtml += '<span style="font-size:11px;font-weight:700;color:#22C55E">AKTIF</span>';
+      shtml += '</div>';
+    }
+    sp.innerHTML = shtml;
+  }
+  // Chat count
+  var tc = 0;
+  users.forEach(function(u){ var ch=LS.get("sml_chat_"+u.id); if(ch) tc+=ch.length; });
+  document.getElementById("svC").textContent = tc;
+}
+
+/* == PRODUCTS == */
+function renderProds(){
+  var catMap = {"cat-pengaduk":"Pengaduk","cat-wajan":"Wajan","cat-peniris":"Snack","cat-pabrik":"Pabrik","cat-perabot":"Perabot"};
+  var tb = document.getElementById("PTB");
+  if(!tb) return;
+  var rows = "";
+  for(var i=0;i<prods.length;i++){
+    var p = prods[i];
+    var badge = p.b ? ('<span class="tbdg on">'+p.b+'</span>') : "";
+    var status = '<span class="tbdg '+(p.a?"on":"off")+'">'+(p.a?"Aktif":"Hidden")+'</span>';
+    rows += "<tr>";
+    rows += '<td><img class="ti" src="'+p.i+'" onerror="this.remove()" alt=""></td>';
+    rows += '<td><div class="tn">'+p.n+'</div>'+badge+'</td>';
+    rows += '<td><div class="tp">'+p.h+'</div></td>';
+    rows += '<td><span style="font-size:11px;color:#6A849E">'+(catMap[p.cat]||p.cat)+'</span></td>';
+    rows += '<td>'+status+'</td>';
+    rows += '<td><div class="acts">';
+    rows += '<button class="act" onclick="editP('+p.id+')">Edit</button>';
+    rows += '<button class="act" onclick="toggleP('+p.id+')">'+(p.a?"Semb":"Tampil")+'</button>';
+    rows += '<button class="act del" onclick="delP('+p.id+')">Hapus</button>';
+    rows += '</div></td></tr>';
+  }
+  tb.innerHTML = rows;
+  document.getElementById("bProd").textContent = prods.length;
+}
+function filterP(q){
+  var rows = document.querySelectorAll("#PTB tr");
+  for(var i=0;i<rows.length;i++){
+    rows[i].style.display = rows[i].textContent.toLowerCase().indexOf(q.toLowerCase()) > -1 ? "" : "none";
+  }
+}
+function saveP(){
+  var id = document.getElementById("eId").value;
+  var o = {
+    id: id ? parseInt(id) : Date.now(),
+    n:  document.getElementById("pN").value || "Produk Baru",
+    h:  document.getElementById("pH").value || "Hubungi Kami",
+    d:  document.getElementById("pD").value || "",
+    s1: document.getElementById("pS1").value || "",
+    s2: document.getElementById("pS2").value || "",
+    s3: document.getElementById("pS3").value || "",
+    b:  document.getElementById("pB").value || "",
+    i:  document.getElementById("pI").value || "img/mesin-mixer.jpg",
+    cat:document.getElementById("pCat").value,
+    a:  document.getElementById("pA").checked
+  };
+  if(id){
+    var idx = -1;
+    for(var i=0;i<prods.length;i++){ if(prods[i].id===parseInt(id)){ idx=i; break; } }
+    if(idx > -1) prods[idx] = o; else prods.push(o);
+  } else {
+    prods.push(o);
+  }
+  LS.set("sml_products", prods);
+  renderProds();
+  resetP();
+  notify("Produk disimpan","ok");
+  addLog("Produk "+o.n+" "+(id?"diperbarui":"ditambahkan"));
+}
+function editP(id){
+  var p = null;
+  for(var i=0;i<prods.length;i++){ if(prods[i].id===id){ p=prods[i]; break; } }
+  if(!p) return;
+  document.getElementById("eId").value  = p.id;
+  document.getElementById("pN").value   = p.n;
+  document.getElementById("pH").value   = p.h;
+  document.getElementById("pD").value   = p.d;
+  document.getElementById("pS1").value  = p.s1||"";
+  document.getElementById("pS2").value  = p.s2||"";
+  document.getElementById("pS3").value  = p.s3||"";
+  document.getElementById("pB").value   = p.b||"";
+  document.getElementById("pI").value   = p.i||"";
+  document.getElementById("pCat").value = p.cat||"cat-pengaduk";
+  document.getElementById("pA").checked = p.a;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function toggleP(id){
+  for(var i=0;i<prods.length;i++){ if(prods[i].id===id){ prods[i].a=!prods[i].a; break; } }
+  LS.set("sml_products",prods); renderProds();
+}
+function delP(id){
+  if(!confirm("Hapus produk ini?")) return;
+  prods = prods.filter(function(p){ return p.id !== id; });
+  LS.set("sml_products",prods); renderProds(); notify("Produk dihapus","err");
+}
+function resetP(){
+  ["eId","pN","pH","pD","pS1","pS2","pS3","pB","pI"].forEach(function(id){ document.getElementById(id).value=""; });
+  document.getElementById("pA").checked = true;
+}
+
+/* == IMAGES == */
+function renderImgs(){
+  var g = document.getElementById("imgGrid");
+  if(!g) return;
+  g.innerHTML = "";
+  for(var i=0;i<IMG_LIST.length;i++){
+    var f = IMG_LIST[i];
+    var fname = f.split("/")[1];
+    var div = document.createElement("div");
+    div.className = "img-th";
+    div.title = fname;
+    var img = document.createElement("img");
+    img.src = f;
+    img.onerror = function(){ this.remove(); };
+    var ov = document.createElement("div");
+    ov.className = "img-ov";
+    var b1 = document.createElement("button");
+    b1.className = "ib";
+    b1.textContent = "C";
+    b1.title = "Copy nama";
+    (function(fn){
+      b1.onclick = function(){
+        if(navigator.clipboard) navigator.clipboard.writeText(fn);
+        notify("Disalin: "+fn,"ok");
+      };
+    })(fname);
+    var b2 = document.createElement("button");
+    b2.className = "ib";
+    b2.textContent = "H";
+    b2.title = "Set Hero";
+    (function(fp){
+      b2.onclick = function(){
+        document.getElementById("hSel").value = fp;
+        document.getElementById("hPv").src = fp;
+      };
+    })(f);
+    var lbl = document.createElement("div");
+    lbl.className = "img-lbl";
+    lbl.textContent = fname;
+    ov.appendChild(b1); ov.appendChild(b2);
+    div.appendChild(img); div.appendChild(ov); div.appendChild(lbl);
+    g.appendChild(div);
+  }
+}
+function handleUpload(el){
+  notify(el.files.length+" file dipilih. Upload perlu backend server.","ok");
+}
+
+/* == VIDEO == */
+function vidSrcToggle(v){
+  document.getElementById("ytRow").style.display   = v==="youtube" ? "block" : "none";
+  document.getElementById("localRow").style.display = v==="local"   ? "block" : "none";
+}
+function saveVid(){
+  var title = document.getElementById("vT").value.trim();
+  if(!title){ notify("Isi judul video","err"); return; }
+  var url = document.getElementById("vUrl").value.trim();
+  var embedUrl = url;
+  var match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if(match) embedUrl = "https://www.youtube.com/embed/"+match[1];
+  var thumb = document.getElementById("vThumb").value.trim() || "img/mesin-mixer.jpg";
+  if(match) thumb = "https://img.youtube.com/vi/"+match[1]+"/hqdefault.jpg";
+  var v = {
+    id: Date.now(),
+    title: title,
+    desc:  document.getElementById("vD").value,
+    type:  document.getElementById("vType").value,
+    src:   document.getElementById("vSrc").value,
+    thumb: thumb,
+    url:   embedUrl
+  };
+  videos.push(v);
+  LS.set("sml_videos", videos);
+  renderVidAdmin("all");
+  ["vT","vD","vUrl","vThumb"].forEach(function(id){ document.getElementById(id).value=""; });
+  notify("Video ditambahkan","ok");
+  addLog("Video "+title+" ditambahkan");
+}
+function renderVidAdmin(filter){
+  var list = filter==="all" ? videos : videos.filter(function(v){ return v.type===filter; });
+  var c = document.getElementById("vidList");
+  if(!c) return;
+  if(!list.length){ c.innerHTML = '<div style="text-align:center;padding:20px;color:#6A849E;font-size:13px">Belum ada video</div>'; return; }
+  var html = "";
+  for(var i=0;i<list.length;i++){
+    var v = list[i];
+    var typeLabel = v.type==="demo"?"Demo":v.type==="tutorial"?"Tutorial":"Testimoni";
+    html += '<div style="display:flex;gap:12px;align-items:center;padding:11px;background:rgba(255,255,255,.03);border:1px solid rgba(200,150,26,.08);border-radius:9px;margin-bottom:8px">';
+    html += '<img src="'+v.thumb+'" style="width:64px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0" onerror="this.remove()">';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+v.title+'</div>';
+    html += '<span class="tbdg on">'+typeLabel+'</span> <span class="tbdg '+(v.src==="youtube"?"on":"off")+'">'+v.src+'</span>';
+    html += '</div>';
+    html += '<div class="acts"><button class="act del" onclick="delVid('+v.id+')">Hapus</button></div>';
+    html += '</div>';
+  }
+  c.innerHTML = html;
+  document.getElementById("svV").textContent = videos.length;
+}
+function filterVidAdmin(f,el){
+  var btns = document.querySelectorAll("#pg-video .ca");
+  for(var i=0;i<btns.length;i++) btns[i].style.background = "rgba(200,150,26,.1)";
+  el.style.background = "rgba(200,150,26,.25)";
+  renderVidAdmin(f);
+}
+function delVid(id){
+  if(!confirm("Hapus video?")) return;
+  videos = videos.filter(function(v){ return v.id!==id; });
+  LS.set("sml_videos",videos); renderVidAdmin("all"); notify("Video dihapus","err");
+}
+
+/* == MARQUEE == */
+function renderMq(){
+  var c = document.getElementById("mqList");
+  if(!c) return;
+  var html = "";
+  for(var i=0;i<mqArr.length;i++){
+    html += '<div class="mq-item">';
+    html += '<span style="color:#6A849E;font-size:14px">&#9702;</span>';
+    html += '<span class="mq-txt">'+mqArr[i]+'</span>';
+    html += '<button class="mq-del" onclick="delMq('+i+')">X</button>';
+    html += '</div>';
+  }
+  c.innerHTML = html;
+}
+function addMq(){
+  var v = document.getElementById("mqNew").value.trim();
+  if(!v) return;
+  mqArr.push(v);
+  document.getElementById("mqNew").value = "";
+  renderMq();
+}
+function delMq(i){ mqArr.splice(i,1); renderMq(); }
+function saveMq(){ LS.set("sml_marquee",mqArr); notify("Marquee disimpan","ok"); addLog("Marquee diperbarui"); }
+
+/* == TESTIMONI == */
+function renderTesti(){
+  var c = document.getElementById("testiContainer");
+  if(!c) return;
+  var html = "";
+  for(var i=0;i<testiArr.length;i++){
+    var t = testiArr[i];
+    html += '<div style="padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(200,150,26,.1);border-radius:9px;margin-bottom:8px">';
+    html += '<div style="display:flex;justify-content:space-between;margin-bottom:5px">';
+    html += '<div><span style="font-size:13px;font-weight:600;color:#fff">'+t.n+'</span><span style="font-size:11px;color:#C8961A;margin-left:7px">'+t.a+'</span></div>';
+    html += '<button onclick="delTesti('+i+')" style="background:none;border:none;color:#6A849E;cursor:pointer;font-size:13px">X</button>';
+    html += '</div>';
+    html += '<div style="font-size:12.5px;color:#B8CAE0;font-style:italic;line-height:1.55">'+t.t+'</div>';
+    html += '</div>';
+  }
+  c.innerHTML = html || '<div style="color:#6A849E;font-size:13px;padding:10px">Belum ada testimoni</div>';
+}
+function addTesti(){
+  testiArr.push({
+    n: document.getElementById("tN").value || "Pelanggan",
+    a: document.getElementById("tA").value || "",
+    r: document.getElementById("tR").value,
+    t: document.getElementById("tT").value || ""
+  });
+  LS.set("sml_testi",testiArr);
+  renderTesti();
+  ["tN","tA","tT"].forEach(function(id){ document.getElementById(id).value=""; });
+  notify("Testimoni ditambahkan","ok");
+}
+function delTesti(i){ testiArr.splice(i,1); LS.set("sml_testi",testiArr); renderTesti(); }
+
+/* == USERS == */
+function renderUsers(){
+  var users = LS.get("sml_users") || [];
+  var tb = document.getElementById("userTB");
+  if(!tb) return;
+  if(!users.length){
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#6A849E;font-size:13px">Belum ada pengunjung terdaftar</td></tr>';
+    return;
+  }
+  var rows = "";
+  for(var i=0;i<users.length;i++){
+    var u = users[i];
+    var d = u.registered ? new Date(u.registered).toLocaleDateString("id-ID") : "-";
+    rows += "<tr>";
+    rows += '<td><span style="font-size:14px;color:#E8AE28;font-weight:800;font-family:monospace">'+u.id+'</span></td>';
+    rows += '<td class="tn">'+u.name+'</td>';
+    rows += '<td style="font-size:12px">'+u.email+'</td>';
+    rows += '<td style="font-size:12px">'+(u.wa||"-")+'</td>';
+    rows += '<td style="font-size:11px;color:#6A849E">'+d+'</td>';
+    rows += '<td><div class="acts"><button class="act del" data-uid="'+u.id+'" onclick="delUserById(this.dataset.uid)">Hapus</button></div></td>';
+    rows += "</tr>";
+  }
+  tb.innerHTML = rows;
+  document.getElementById("svU").textContent = users.length;
+  document.getElementById("bUsers").textContent = users.length;
+}
+function delUserById(id){ delUser(id); }
+function delUser(id){
+  if(!confirm("Hapus user ini?")) return;
+  var users = LS.get("sml_users") || [];
+  LS.set("sml_users", users.filter(function(u){ return u.id !== id; }));
+  renderUsers();
+}
+function exportUsers(){
+  var users = LS.get("sml_users") || [];
+  if(!users.length){ notify("Tidak ada data pengunjung","err"); return; }
+  var csv = "ID,Nama,Email,WA,Terdaftar\n";
+
+  for(var i=0;i<users.length;i++){
+    var u = users[i];
+    var d = u.registered ? new Date(u.registered).toLocaleDateString("id-ID") : "-";
+    csv += u.id + ',"' + u.name + '","' + u.email + '","' + (u.wa||"") + '","' + d + '"\n';
+
+  }
+  var a = document.createElement("a");
+  a.href = "data:text/csv;charset=utf-8,"+encodeURIComponent(csv);
+  a.download = "pengunjung-sml.csv";
+  a.click();
+}
+
+/* == LIVE CHAT == */
+function loadChats(){
+  var st = document.getElementById("chatStatus");
+  if(st) st.textContent = "Memuat...";
+  fetch(API+"/chat-admin")
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    var sessions = data.sessions || [];
+    if(st) st.textContent = sessions.length+" percakapan";
+    var sl = document.getElementById("sessionList");
+    if(!sl) return;
+    if(!sessions.length){
+      sl.innerHTML = '<div style="padding:20px;text-align:center;color:#6A849E;font-size:13px">Belum ada pesan masuk</div>';
+      return;
+    }
+    var html = "";
+    for(var i=0;i<sessions.length;i++){
+      var s = sessions[i];
+      var d = s.lastTime ? new Date(s.lastTime) : null;
+      var ts = d ? d.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}) : "";
+      var unread = s.unread > 0 ? '<span style="background:#EF4444;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:10px;margin-left:5px">'+s.unread+'</span>' : "";
+      var isActive = activeSession === s.sessionId;
+      html += '<div class="session-item'+(isActive?" active":"")+'" data-sid="'+s.sessionId+'" data-name="'+s.userName+'" onclick="selectSession(this)">';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between">';
+      html += '<div class="si-name">'+s.userName+unread+'</div>';
+      html += '<div class="si-time">'+ts+'</div>';
+      html += '</div>';
+      html += '<div class="si-preview">'+s.lastMessage.substring(0,45)+'</div>';
+      if(s.userId && s.userId !== "guest") html += '<div class="si-id">'+s.userId+'</div>';
+      html += '</div>';
+    }
+    sl.innerHTML = html;
+    if(activeSession){
+      for(var j=0;j<sessions.length;j++){
+        if(sessions[j].sessionId === activeSession){
+          renderChatWin(sessions[j].messages || []);
+          break;
+        }
+      }
+    }
+  })
+  .catch(function(){
+    if(st) st.textContent = "Gagal memuat";
+  });
+}
+function selectSession(el){
+  var sid  = el.dataset.sid;
+  var name = el.dataset.name;
+  activeSession = sid;
+  document.getElementById("cwName").textContent = name || "Pengunjung";
+  document.getElementById("cwSub").textContent  = "Session: "+sid;
+  document.getElementById("adminMsg").placeholder = "Balas ke "+( name||"Pengunjung")+"...";
+  document.querySelectorAll(".session-item").forEach(function(s){ s.classList.remove("active"); });
+  el.classList.add("active");
+  fetch(API+"/chat-admin")
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    var sessions = data.sessions || [];
+    for(var i=0;i<sessions.length;i++){
+      if(sessions[i].sessionId === sid){
+        renderChatWin(sessions[i].messages || []);
+        break;
+      }
+    }
+  });
+}
+function renderChatWin(messages){
+  var c = document.getElementById("cwMsgs");
+  if(!c) return;
+  if(!messages || !messages.length){
+    c.innerHTML = '<div style="text-align:center;color:#6A849E;font-size:13px;padding:40px 0">Belum ada pesan</div>';
+    return;
+  }
+  var html = "";
+  for(var i=0;i<messages.length;i++){
+    var m = messages[i];
+    var isAdmin = m.from === "admin";
+    var d = m.timestamp ? new Date(m.timestamp) : null;
+    var ts = d ? d.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}) : "";
+    html += '<div style="display:flex;justify-content:'+(isAdmin?"flex-end":"flex-start")+'">';
+    html += '<div class="cw-bubble '+(isAdmin?"admin":"visitor")+'">';
+    if(!isAdmin) html += '<div class="cw-from">'+m.userName+'</div>';
+    html += m.message.split("\n").join("<br>");
+
+    html += '<div class="cw-ts">'+ts+'</div>';
+    html += '</div></div>';
+  }
+  c.innerHTML = html;
+  c.scrollTop = c.scrollHeight;
+}
+function sendAdminMsg(){
+  if(!activeSession){ notify("Pilih percakapan dulu","err"); return; }
+  var inp = document.getElementById("adminMsg");
+  var msg = inp.value.trim();
+  if(!msg) return;
+  inp.value = "";
+  fetch(API+"/chat-admin",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({sessionId:activeSession, message:msg})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.ok){ notify("Balasan terkirim","ok"); loadChats(); }
+    else { notify("Gagal kirim: "+(data.error||""),"err"); }
+  })
+  .catch(function(){ notify("Tidak dapat terhubung ke server","err"); });
+}
+
+/* == WIDGET BUILDER == */
+function renderBuilder(){
+  var inCanvas = wLayout;
+  var pal = document.getElementById("palGrid");
+  if(!pal) return;
+  var palHtml = "";
+  for(var i=0;i<DEF_W.length;i++){
+    var w = DEF_W[i];
+    var inUse = false;
+    for(var j=0;j<inCanvas.length;j++){ if(inCanvas[j]===w.id){ inUse=true; break; } }
+    if(!inUse){
+      palHtml += '<div class="pal-item" data-wid="'+w.id+'" onclick="addWidget(this.dataset.wid)">';
+      palHtml += '<div class="pal-icon">'+w.icon+'</div>';
+      palHtml += '<div class="pal-name">'+w.name+'</div>';
+      palHtml += '<div class="pal-desc">'+w.desc+'</div>';
+      palHtml += '</div>';
+    }
+  }
+  pal.innerHTML = palHtml || '<div style="color:#6A849E;font-size:13px">Semua widget sudah di canvas</div>';
+  renderCanvas();
+}
+function renderCanvas(){
+  var ca = document.getElementById("canvasArea");
+  if(!ca) return;
+  if(!wLayout.length){
+    ca.innerHTML = '<div style="text-align:center;padding:30px;color:#6A849E;font-size:13px">Canvas kosong. Tambah widget dari atas.</div>';
+    return;
+  }
+  var html = "";
+  for(var i=0;i<wLayout.length;i++){
+    var wid = wLayout[i];
+    var w = null;
+    for(var j=0;j<DEF_W.length;j++){ if(DEF_W[j].id===wid){ w=DEF_W[j]; break; } }
+    if(!w) w={id:wid,icon:"W",name:wid,desc:"Widget"};
+    html += '<div class="wi-card">';
+    html += '<span class="wi-icon">'+w.icon+'</span>';
+    html += '<span class="wi-title">'+w.name+'</span>';
+    html += '<span class="wi-pos">Posisi '+(i+1)+'</span>';
+    html += '<div class="wi-acts">';
+    html += '<button class="wi-act" data-idx="'+i+'" data-dir="-1" onclick="moveW(parseInt(this.dataset.idx),parseInt(this.dataset.dir))">&#8593;</button>';
+    html += '<button class="wi-act" data-idx="'+i+'" data-dir="1" onclick="moveW(parseInt(this.dataset.idx),parseInt(this.dataset.dir))">&#8595;</button>';
+    html += '<button class="wi-act" data-wid="'+wid+'" onclick="removeW(this.dataset.wid)" style="color:#EF4444">X</button>';
+    html += '</div></div>';
+  }
+  ca.innerHTML = html;
+}
+function addWidget(id){
+  wLayout.push(id);
+  renderBuilder();
+}
+function moveW(idx,dir){
+  var ni = idx+dir;
+  if(ni<0||ni>=wLayout.length) return;
+  var tmp = wLayout[idx]; wLayout[idx]=wLayout[ni]; wLayout[ni]=tmp;
+  renderCanvas();
+}
+function removeW(id){
+  wLayout = wLayout.filter(function(w){ return w!==id; });
+  renderBuilder();
+}
+function saveBuilder(){ LS.set("sml_widgets",wLayout); notify("Susunan widget disimpan","ok"); addLog("Widget layout diperbarui"); }
+
+/* == COLOR PICKERS == */
+document.getElementById("cN").addEventListener("input", function(e){
+  document.getElementById("cNTxt").value = e.target.value;
+  document.getElementById("pN").style.background = e.target.value;
+});
+document.getElementById("cG").addEventListener("input", function(e){
+  document.getElementById("cGTxt").value = e.target.value;
+  document.getElementById("pG").style.background = e.target.value;
+});
+document.getElementById("cG2").addEventListener("input", function(e){
+  document.getElementById("cG2Txt").value = e.target.value;
+  document.getElementById("pG2").style.background = e.target.value;
+});
+
+/* == SAVE ALL == */
+function saveAll(){
+  LS.set("sml_products",prods);
+  LS.set("sml_marquee",mqArr);
+  LS.set("sml_testi",testiArr);
+  LS.set("sml_videos",videos);
+  notify("Semua data disimpan","ok");
+  addLog("Simpan semua data");
+}
+
+/* == BACKUP == */
+function exportAll(){
+  var d = {prods:prods,mq:mqArr,testi:testiArr,videos:videos,ts:new Date().toISOString()};
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:"application/json"}));
+  a.download = "sml-backup-"+Date.now()+".json";
+  a.click();
+  notify("Backup diunduh","ok");
+}
+function importAll(el){
+  var r = new FileReader();
+  r.onload = function(e){
+    try{
+      var d = JSON.parse(e.target.result);
+      if(d.prods){ prods=d.prods; LS.set("sml_products",prods); }
+      if(d.mq){ mqArr=d.mq; LS.set("sml_marquee",mqArr); }
+      if(d.videos){ videos=d.videos; LS.set("sml_videos",videos); }
+      notify("Import berhasil","ok");
+    }catch(err){ notify("File tidak valid","err"); }
+  };
+  r.readAsText(el.files[0]);
+}
+function resetAll(){
+  if(!confirm("Reset semua data ke default? Tidak bisa dibatalkan.")) return;
+  prods=DEF_P; mqArr=DEF_MQ; testiArr=DEF_T; videos=DEF_V; wLayout=["hero","categories","featured","why","testimonials","coverage"];
+  ["sml_products","sml_marquee","sml_testi","sml_videos","sml_log","sml_widgets"].forEach(function(k){ localStorage.removeItem(k); });
+  notify("Reset selesai","ok");
+}
+
+/* == LOG == */
+function addLog(msg){
+  logs.unshift({msg:msg,t:new Date().toLocaleString("id-ID")});
+  if(logs.length>60) logs.pop();
+  LS.set("sml_log",logs);
+}
+function renderLog(){
+  var c = document.getElementById("logPanel");
+  if(!c) return;
+  if(!logs.length){ c.innerHTML='<div style="text-align:center;padding:18px;color:#6A849E;font-size:13px">Belum ada aktivitas</div>'; return; }
+  var html = "";
+  for(var i=0;i<logs.length;i++){
+    html += '<div style="padding:7px 0;border-bottom:1px solid rgba(200,150,26,.06);display:flex;gap:9px">';
+    html += '<span style="font-size:10px;color:#6A849E;white-space:nowrap;min-width:110px">'+logs[i].t+'</span>';
+    html += '<span style="font-size:12px;color:#B8CAE0">'+logs[i].msg+'</span>';
+    html += '</div>';
+  }
+  c.innerHTML = html;
+}
+function clearLog(){ logs=[]; LS.set("sml_log",[]); renderLog(); notify("Log dibersihkan","ok"); }
+
+/* == NOTIFY == */
+function notify(msg,type){
+  var el = document.createElement("div");
+  el.className = "ni "+(type==="ok"?"ok":"err");
+  el.textContent = msg;
+  document.getElementById("NA").appendChild(el);
+  setTimeout(function(){ if(el.parentNode) el.remove(); }, 3500);
+}
+
+/* == INIT == */
+// Restore sidebar state
+if(LS.get("sml_slim")){
+  document.getElementById("SB").classList.add("slim");
+  document.getElementById("mainArea").classList.add("wide");
+}
+// Show login ID
+document.getElementById("loginIdShow").textContent = adminCreds.id;
+// Auto login if session active
+if(adminLoggedIn){
+  document.getElementById("loginWrap").classList.add("gone");
+  document.getElementById("appShell").classList.remove("gone");
+  document.getElementById("sbAv").textContent = adminCreds.user.charAt(0).toUpperCase();
+  document.getElementById("sbName").textContent = adminCreds.user;
+  renderDash();
+}
+</script>
+</body>
+</html>
