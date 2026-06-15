@@ -979,17 +979,17 @@ function sendMsg(){
   var txt = inp.value.trim();
   if(!txt) return;
   inp.value = '';
-  console.log('sendMsg called, txt:', txt, 'SESSION_ID:', SESSION_ID);
 
   var userName = currentUser ? currentUser.name : 'Pengunjung';
   var userId   = currentUser ? currentUser.id   : '';
 
-  // Tampilkan langsung di UI
   appendMsg(txt, 'user');
-  chatMessages.push({txt:txt, who:'user', time:now()});
 
-  // Kirim ke Netlify Function
-  fetch(API_BASE + '/chat-send', {
+  appendMsg('Mengirim pesan...', 'bot');
+
+  var url = 'https://saranamultylogam26.netlify.app/.netlify/functions/chat-send';
+
+  fetch(url, {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({
@@ -1001,17 +1001,22 @@ function sendMsg(){
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
+    var msgs = document.getElementById('chatMsgs');
+    var last = msgs.lastElementChild;
+    if(last && last.className === 'msg bot') last.remove();
     if(data.ok){
-      // Update lastMsgId agar polling tidak re-tampilkan pesan ini
       if(data.msgId) lastMsgId = Math.max(lastMsgId, data.msgId);
-      // Tampilkan typing indicator menunggu balasan admin
+      appendMsg('Pesan terkirim! Admin akan segera membalas.', 'bot');
       showTyping();
     } else {
-      appendMsg('Gagal mengirim pesan. Coba lagi.', 'bot');
+      appendMsg('Gagal: '+(data.error||'coba lagi'), 'bot');
     }
   })
-  .catch(function(){
-    appendMsg('Tidak dapat terhubung. Periksa koneksi Anda.', 'bot');
+  .catch(function(e){
+    var msgs = document.getElementById('chatMsgs');
+    var last = msgs.lastElementChild;
+    if(last && last.className === 'msg bot') last.remove();
+    appendMsg('Error: '+e.message, 'bot');
   });
 }
 
