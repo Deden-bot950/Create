@@ -13,32 +13,33 @@ exports.handler = async function(event) {
   }
 
   try {
-    var JSONBIN_KEY = process.env.JSONBIN_KEY;
-    var JSONBIN_BIN = process.env.JSONBIN_BIN;
-    var FONNTE_TOKEN = process.env.FONNTE_TOKEN;
-    var ADMIN_WA = process.env.ADMIN_WA || '6285371526068';
+    var JSONBIN_KEY  = process.env.JSONBIN_KEY;
+    var JSONBIN_BIN  = process.env.JSONBIN_BIN;
+    var RIFTY_TOKEN  = 'LnynzpEuiroQjx9f5UG1'; // Token nomor websml (pengirim)
+    var RIFTY_NUMBER = '6285371526068';          // Nomor Rifty (penerima/chatbot)
 
     var body = JSON.parse(event.body || '{}');
     var sessionId = body.sessionId;
-    var userName = body.userName || 'Pengunjung';
-    var userId = body.userId || '';
-    var message = body.message;
+    var userName  = body.userName || 'Pengunjung';
+    var userId    = body.userId   || '';
+    var message   = body.message;
 
     if (!message || !sessionId) {
       return { statusCode: 400, headers: headers, body: JSON.stringify({ error: 'wajib diisi' }) };
     }
 
     var msgObj = {
-      id: Date.now(),
+      id:        Date.now(),
       sessionId: sessionId,
-      userId: userId,
-      userName: userName,
-      message: message,
-      from: 'visitor',
+      userId:    userId,
+      userName:  userName,
+      message:   message,
+      from:      'visitor',
       timestamp: new Date().toISOString(),
-      read: false
+      read:      false
     };
 
+    // Simpan ke JSONBin
     var chatData = { chats: [] };
     try {
       var getRes = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN + '/latest', {
@@ -55,22 +56,39 @@ exports.handler = async function(event) {
     if (chatData.chats.length > 500) chatData.chats = chatData.chats.slice(-500);
 
     await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN, {
-      method: 'PUT',
+      method:  'PUT',
       headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
-      body: JSON.stringify(chatData)
+      body:    JSON.stringify(chatData)
     });
 
-    var waMsg = 'Pesan Website SML\nDari: ' + userName + '\nSession: ' + sessionId + '\n---\n' + message + '\n\nBalas untuk menjawab';
+    // Kirim pesan ke Rifty (chatbot) via Fonnte dari nomor websml
+    // Format: [SESSION_ID] pesan — agar webhook tahu session mana yang harus dibalas
+    var waMsg = '[' + sessionId + '] ' + message;
 
     await fetch('https://api.fonnte.com/send', {
-      method: 'POST',
-      headers: { 'Authorization': FONNTE_TOKEN, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: ADMIN_WA, message: waMsg, countryCode: '62' })
+      method:  'POST',
+      headers: {
+        'Authorization': RIFTY_TOKEN,
+        'Content-Type':  'application/json'
+      },
+      body: JSON.stringify({
+        target:      RIFTY_NUMBER,
+        message:     waMsg,
+        countryCode: '62'
+      })
     });
 
-    return { statusCode: 200, headers: headers, body: JSON.stringify({ ok: true, msgId: msgObj.id }) };
+    return {
+      statusCode: 200,
+      headers:    headers,
+      body:       JSON.stringify({ ok: true, msgId: msgObj.id })
+    };
 
   } catch(err) {
-    return { statusCode: 500, headers: headers, body: JSON.stringify({ error: err.message }) };
+    return {
+      statusCode: 500,
+      headers:    headers,
+      body:       JSON.stringify({ error: err.message })
+    };
   }
 };
