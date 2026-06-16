@@ -948,15 +948,16 @@ function closeChatWidget(){
 }
 
 /* ── Render pesan di UI ── */
-function appendMsg(txt,who,ts){
-  var c=document.getElementById('chatMsgs');
-  var d=document.createElement('div');
-  d.className='msg '+who;
-  var safe=txt.split('\n').join('<br>');
-  d.innerHTML=safe+'<div class="msg-time">'+(ts||now())+'</div>';
+function appendMsg(txt, who, ts){
+  var c = document.getElementById('chatMsgs');
+  var d = document.createElement('div');
+  d.className = 'msg ' + who;
+  var safe = txt.split('\n').join('<br>');
+  d.innerHTML = safe + '<div class="msg-time">' + (ts||now()) + '</div>';
   c.appendChild(d);
-  c.scrollTop=c.scrollHeight;
+  c.scrollTop = c.scrollHeight;
 }
+
 
 function showTyping(){
   var t = document.getElementById('typingEl');
@@ -977,25 +978,32 @@ function sendMsg(){
   inp.value = '';
 
   var userName = currentUser ? currentUser.name : 'Pengunjung';
+  var userId   = currentUser ? currentUser.id   : '';
 
-  // Tampilkan di UI
   appendMsg(txt, 'user');
 
-  // Format pesan WA
-  var waMsg = 'Halo Admin SML,' +
-    '%0APesan dari website:' +
-    '%0ANama: ' + encodeURIComponent(userName) +
-    '%0A---' +
-    '%0A' + encodeURIComponent(txt) +
-    '%0A%0A_Pesan ini dikirim dari website saranamltylogam_';
-
-  // Buka WA admin
-  window.open('https://wa.me/6285371526068?text=' + waMsg, '_blank');
-
-  // Konfirmasi di chat
-  setTimeout(function(){
-    appendMsg('Pesan Anda sudah diteruskan ke WhatsApp admin. Silakan lanjutkan chat di WA yang baru terbuka.', 'bot');
-  }, 500);
+  fetch('/.netlify/functions/chat-send', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      sessionId: SESSION_ID,
+      userName:  userName,
+      userId:    userId,
+      message:   txt
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.ok){
+      if(data.msgId) lastMsgId = Math.max(lastMsgId, data.msgId);
+      showTyping();
+    } else {
+      appendMsg('Gagal mengirim. Coba lagi.', 'bot');
+    }
+  })
+  .catch(function(){
+    appendMsg('Tidak dapat terhubung ke server.', 'bot');
+  });
 }
 
 
