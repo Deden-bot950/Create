@@ -696,7 +696,7 @@ footer{background:#050D1A;border-top:1px solid var(--bd);padding:52px 0 22px;}
       <button class="cp-close" onclick="closeChatWidget()">✕</button>
     </div>
     <div class="cp-msgs" id="chatMsgs">
-      <div class="msg bot">Halo! 👋 Selamat datang di <strong>Sarana Multy Logam</strong>.<br><br>Silakan tulis pesan Anda — admin kami akan membalas langsung via WhatsApp dalam waktu singkat.<br><br>⏱ Respons biasanya <strong>5–15 menit</strong> di jam kerja.
+      <div class="msg bot">Halo! 👋 Selamat datang di <strong>Sarana Multy Logam</strong>.<br><br>Silakan tulis pesan Anda — Tulis pesan Anda dan admin kami akan membalas via WhatsApp.<br><br>⏱ Respons biasanya <strong>5–15 menit</strong> di jam kerja.
         <div class="msg-time" id="botTime"></div>
       </div>
     </div>
@@ -948,20 +948,16 @@ function closeChatWidget(){
 }
 
 /* ── Render pesan di UI ── */
-function appendMsg(txt, who, ts){
-  var c = document.getElementById('chatMsgs');
-  var d = document.createElement('div');
-  d.className = 'msg ' + who;
-  var safe = txt.split('\n').join('<br>');
-  d.innerHTML = safe + '<div class="msg-time">' + (ts||now()) + '</div>';
-  // Hapus typing indicator jika ada
-  var typing = document.getElementById('typingEl');
-  if(typing) c.insertBefore(d, typing);
-  else c.appendChild(d);
-  c.scrollTop = c.scrollHeight;
+function appendMsg(txt,who,ts){
+  var c=document.getElementById('chatMsgs');
+  var d=document.createElement('div');
+  d.className='msg '+who;
+  var safe=txt.split('\n').join('<br>');
+  d.innerHTML=safe+'<div class="msg-time">'+(ts||now())+'</div>';
+  c.appendChild(d);
+  c.scrollTop=c.scrollHeight;
 }
 
-/* ── Typing indicator ── */
 function showTyping(){
   var t = document.getElementById('typingEl');
   if(t) t.style.display = 'block';
@@ -981,44 +977,27 @@ function sendMsg(){
   inp.value = '';
 
   var userName = currentUser ? currentUser.name : 'Pengunjung';
-  var userId   = currentUser ? currentUser.id   : '';
 
+  // Tampilkan di UI
   appendMsg(txt, 'user');
 
-  appendMsg('Mengirim pesan...', 'bot');
+  // Format pesan WA
+  var waMsg = 'Halo Admin SML,' +
+    '%0APesan dari website:' +
+    '%0ANama: ' + encodeURIComponent(userName) +
+    '%0A---' +
+    '%0A' + encodeURIComponent(txt) +
+    '%0A%0A_Pesan ini dikirim dari website saranamltylogam_';
 
-  var url = 'https://saranamultylogam26.netlify.app/.netlify/functions/chat-send';
+  // Buka WA admin
+  window.open('https://wa.me/6285371526068?text=' + waMsg, '_blank');
 
-  fetch(url, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      sessionId: SESSION_ID,
-      userName:  userName,
-      userId:    userId,
-      message:   txt
-    })
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    var msgs = document.getElementById('chatMsgs');
-    var last = msgs.lastElementChild;
-    if(last && last.className === 'msg bot') last.remove();
-    if(data.ok){
-      if(data.msgId) lastMsgId = Math.max(lastMsgId, data.msgId);
-      appendMsg('Pesan terkirim! Admin akan segera membalas.', 'bot');
-      showTyping();
-    } else {
-      appendMsg('Gagal: '+(data.error||'coba lagi'), 'bot');
-    }
-  })
-  .catch(function(e){
-    var msgs = document.getElementById('chatMsgs');
-    var last = msgs.lastElementChild;
-    if(last && last.className === 'msg bot') last.remove();
-    appendMsg('Error: '+e.message, 'bot');
-  });
+  // Konfirmasi di chat
+  setTimeout(function(){
+    appendMsg('Pesan Anda sudah diteruskan ke WhatsApp admin. Silakan lanjutkan chat di WA yang baru terbuka.', 'bot');
+  }, 500);
 }
+
 
 function sendQuick(txt){
   document.getElementById('chatInput').value = txt;
