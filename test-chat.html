@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Test Chat-Send</title>
+<style>
+body{font-family:sans-serif;background:#111;color:#fff;padding:20px;max-width:500px;margin:0 auto;}
+h2{color:#E8AE28;margin-bottom:20px;}
+input,textarea{width:100%;padding:10px;margin-bottom:12px;background:#1a2a3a;border:1px solid #333;color:#fff;border-radius:8px;font-size:14px;box-sizing:border-box;}
+button{width:100%;padding:14px;background:#C8961A;color:#000;font-weight:700;font-size:15px;border:none;border-radius:8px;cursor:pointer;}
+button:active{opacity:.8;}
+#result{margin-top:20px;padding:14px;background:#0a1a2a;border-radius:8px;font-size:13px;white-space:pre-wrap;word-break:break-all;min-height:60px;border:1px solid #333;}
+.ok{color:#22C55E;}
+.err{color:#EF4444;}
+label{font-size:12px;color:#aaa;margin-bottom:4px;display:block;}
+</style>
+</head>
+<body>
+<h2>🔧 Test chat-send</h2>
+
+<label>Session ID</label>
+<input id="sid" value="TEST-DEBUG-001" />
+
+<label>Nama</label>
+<input id="name" value="Tester" />
+
+<label>Pesan</label>
+<input id="msg" value="Halo test dari halaman debug" />
+
+<button onclick="kirim()">Kirim POST ke chat-send</button>
+
+<div id="result">Hasil akan muncul di sini...</div>
+
+<script>
+async function kirim(){
+  var result = document.getElementById('result');
+  result.className = '';
+  result.textContent = 'Mengirim...';
+  try {
+    var res = await fetch('/.netlify/functions/chat-send', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        sessionId: document.getElementById('sid').value,
+        userName:  document.getElementById('name').value,
+        message:   document.getElementById('msg').value
+      })
+    });
+    var text = await res.text();
+    var data;
+    try { data = JSON.parse(text); } catch(e) { data = text; }
+    result.className = res.ok ? 'ok' : 'err';
+    result.textContent = 'Status: ' + res.status + '\n\n' + JSON.stringify(data, null, 2);
+  } catch(e) {
+    result.className = 'err';
+    result.textContent = 'FETCH ERROR:\n' + e.message;
+  }
+}
+</script>
+</body>
+</html>
