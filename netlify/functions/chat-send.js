@@ -15,8 +15,8 @@ exports.handler = async function(event) {
   try {
     var JSONBIN_KEY  = process.env.JSONBIN_KEY;
     var JSONBIN_BIN  = process.env.JSONBIN_BIN;
-    var RIFTY_TOKEN  = 'LnynzpEuiroQjx9f5UG1'; // Token nomor websml (pengirim)
-    var RIFTY_NUMBER = '6285371526068';          // Nomor Rifty (penerima/chatbot)
+    var RIFTY_TOKEN = process.env.FONNTE_TOKEN;
+    var RIFTY_NUMBER = process.env.RIFTY_NUMBER;          // Nomor Rifty (penerima/chatbot)
 
     var body = JSON.parse(event.body || '{}');
     var sessionId = body.sessionId;
