@@ -357,7 +357,20 @@ input,select,textarea,button{font-family:"Inter",sans-serif;}
     <div class="fg2"><div class="fg"><label>Nama Produk</label><input id="pN" placeholder="Nama produk"></div><div class="fg"><label>Harga</label><input id="pH" placeholder="Rp 4.500.000"></div></div>
     <div class="fg"><label>Deskripsi</label><textarea id="pD" placeholder="Deskripsi singkat"></textarea></div>
     <div class="fg3"><div class="fg"><label>Spec 1</label><input id="pS1" placeholder="Stainless 304"></div><div class="fg"><label>Spec 2</label><input id="pS2" placeholder="25-200 Kg"></div><div class="fg"><label>Spec 3</label><input id="pS3" placeholder="Bermotor"></div></div>
-    <div class="fg2"><div class="fg"><label>Badge</label><input id="pB" placeholder="Terlaris"></div><div class="fg"><label>File Gambar</label><input id="pI" placeholder="mesin-mixer.jpg"></div></div>
+    <div class="fg2">
+      <div class="fg"><label>Badge</label><input id="pB" placeholder="Terlaris"></div>
+      <div class="fg"><label>Gambar Produk</label>
+        <div style="display:flex;gap:7px;align-items:flex-start">
+          <div style="flex:1">
+            <input id="pI" placeholder="img/mesin-mixer.jpg" style="margin-bottom:6px" oninput="updateProdImgPreview()">
+            <button type="button" class="btn-s" style="width:100%;justify-content:center;font-size:11px;padding:7px" onclick="openImgPicker()">&#128247; Pilih dari Library</button>
+          </div>
+          <div style="width:54px;height:54px;border-radius:8px;overflow:hidden;border:1px solid rgba(200,150,26,.2);flex-shrink:0;background:var(--n3)">
+            <img id="pImgPreview" src="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="fg"><label>Kategori Halaman</label>
       <select id="pCat">
         <option value="cat-pengaduk">Mesin Pengaduk</option>
@@ -382,32 +395,46 @@ input,select,textarea,button{font-family:"Inter",sans-serif;}
 <!-- GAMBAR -->
 <div class="pg" id="pg-gambar">
   <div class="card">
-    <div class="ch"><div class="ct">Upload Gambar</div><span style="font-size:12px;color:var(--mu)">JPG/PNG max 5MB</span></div>
-    <div style="border:2px dashed rgba(200,150,26,.3);border-radius:12px;padding:26px;text-align:center;cursor:pointer;background:rgba(200,150,26,.04)" onclick="document.getElementById('imgF').click()">
-      <input type="file" id="imgF" accept="image/*" multiple style="display:none" onchange="handleUpload(this)">
-      <div style="font-size:30px;margin-bottom:9px">&#128193;</div>
-      <div style="font-size:14px;font-weight:600;margin-bottom:4px">Klik untuk pilih gambar</div>
-      <div style="font-size:12px;color:var(--mu)">Drag &amp; drop juga bisa</div>
+    <div class="ch"><div class="ct">Upload Gambar</div><span style="font-size:12px;color:var(--mu)">JPG/PNG/WebP · max 3MB per file</span></div>
+    <div id="dropZone" style="border:2px dashed rgba(200,150,26,.3);border-radius:12px;padding:30px;text-align:center;cursor:pointer;background:rgba(200,150,26,.04);transition:all .2s" onclick="document.getElementById('imgF').click()" ondragover="event.preventDefault();this.style.borderColor='#E8AE28'" ondragleave="this.style.borderColor='rgba(200,150,26,.3)'" ondrop="dropImg(event)">
+      <input type="file" id="imgF" accept="image/*" multiple style="display:none" onchange="handleUpload(this.files)">
+      <div style="font-size:36px;margin-bottom:10px">&#128247;</div>
+      <div style="font-size:14px;font-weight:600;color:#B8CAE0;margin-bottom:5px">Klik atau drag &amp; drop gambar di sini</div>
+      <div style="font-size:12px;color:var(--mu)">Bisa pilih beberapa file sekaligus</div>
+    </div>
+    <div id="uploadProgress" style="display:none;margin-top:12px">
+      <div style="font-size:12px;color:var(--g2);margin-bottom:6px" id="upMsg">Memproses...</div>
+      <div style="background:rgba(255,255,255,.06);border-radius:4px;height:6px;overflow:hidden"><div id="upBar" style="height:100%;background:linear-gradient(90deg,#C8961A,#F0C040);width:0%;transition:width .3s;border-radius:4px"></div></div>
     </div>
   </div>
-  <div class="card"><div class="ch"><div class="ct">Library Gambar</div></div><div class="img-grid" id="imgGrid"></div></div>
+
   <div class="card">
-    <div class="ch"><div class="ct">Gambar Hero</div></div>
-    <div class="fg">
-      <label>Pilih untuk Hero</label>
-      <select id="hSel" onchange="document.getElementById('hPv').src=this.value">
-        <option value="img/mesin-mixer.jpg">mesin-mixer.jpg</option>
-        <option value="img/mesin-snack.jpg">mesin-snack.jpg</option>
-        <option value="img/wajan-besar.jpg">wajan-besar.jpg</option>
-        <option value="img/tahang.jpg">tahang.jpg</option>
-        <option value="img/mesin-giling.jpg">mesin-giling.jpg</option>
-        <option value="img/mesin-dodol.jpg">mesin-dodol.jpg</option>
-        <option value="img/rak-dapur.jpg">rak-dapur.jpg</option>
-        <option value="img/wajan-stainless.jpg">wajan-stainless.jpg</option>
-      </select>
+    <div class="ch">
+      <div class="ct">Library Gambar</div>
+      <div style="display:flex;gap:7px;align-items:center">
+        <span id="imgCount" style="font-size:12px;color:var(--mu)">0 gambar</span>
+        <button class="ca" onclick="renderImgs()">Refresh</button>
+      </div>
     </div>
-    <div style="border-radius:10px;overflow:hidden;border:1px solid var(--bd);max-width:320px;margin-top:8px"><img id="hPv" src="img/mesin-mixer.jpg" style="width:100%;height:150px;object-fit:cover" onerror="this.remove()"></div>
-    <button class="btn-g" style="margin-top:11px" onclick="LS.set('sml_heroImg',document.getElementById('hSel').value);notify('Gambar hero disimpan','ok')">Terapkan ke Hero</button>
+    <div style="font-size:11px;color:var(--mu);margin-bottom:10px">Hover gambar untuk aksi: <strong style="color:var(--g2)">C</strong>=Copy nama · <strong style="color:var(--g2)">H</strong>=Set Hero · <strong style="color:var(--g2)">P</strong>=Pilih ke form produk · <strong style="color:var(--re)">X</strong>=Hapus</div>
+    <div class="img-grid" id="imgGrid"></div>
+    <div id="imgEmpty" style="display:none;text-align:center;padding:30px;color:#6A849E;font-size:13px">Belum ada gambar. Upload di atas.</div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ct">Atur Gambar Hero</div></div>
+    <p style="font-size:12px;color:var(--mu);margin-bottom:12px">Pilih gambar dari library untuk ditampilkan di section hero website.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <div style="flex:1;min-width:200px">
+        <div class="fg"><label>Gambar Hero Saat Ini</label>
+          <select id="hSel" onchange="document.getElementById('hPv').src=this.value" style="font-size:12px"></select>
+        </div>
+      </div>
+      <div style="border-radius:10px;overflow:hidden;border:1px solid var(--bd);width:160px;flex-shrink:0">
+        <img id="hPv" src="img/mesin-mixer.jpg" style="width:100%;height:100px;object-fit:cover;display:block" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <button class="btn-g" style="margin-top:12px" onclick="saveHeroImg()">&#128247; Terapkan ke Hero</button>
   </div>
 </div>
 
@@ -935,6 +962,7 @@ function editP(id){
   document.getElementById("pI").value   = p.i||"";
   document.getElementById("pCat").value = p.cat||"cat-pengaduk";
   document.getElementById("pA").checked = p.a;
+  updateProdImgPreview();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function toggleP(id){
@@ -949,54 +977,293 @@ function delP(id){
 function resetP(){
   ["eId","pN","pH","pD","pS1","pS2","pS3","pB","pI"].forEach(function(id){ document.getElementById(id).value=""; });
   document.getElementById("pA").checked = true;
+  var pv = document.getElementById("pImgPreview");
+  if(pv){ pv.src=""; pv.style.display="none"; }
 }
 
-/* == IMAGES == */
-function renderImgs(){
-  var g = document.getElementById("imgGrid");
-  if(!g) return;
-  g.innerHTML = "";
+/* == IMAGES (Base64 localStorage) == */
+
+// Merge: built-in static list + uploaded images from LS
+function getAllImages(){
+  var uploaded = LS.get("sml_uploaded_imgs") || [];
+  // Build combined list: {src, name, deletable}
+  var list = [];
   for(var i=0;i<IMG_LIST.length;i++){
     var f = IMG_LIST[i];
-    var fname = f.split("/")[1];
+    var n = f.split("/").pop();
+    list.push({src:f, name:n, deletable:false});
+  }
+  for(var j=0;j<uploaded.length;j++){
+    list.push({src:uploaded[j].data, name:uploaded[j].name, deletable:true, key:uploaded[j].name});
+  }
+  return list;
+}
+
+function buildHeroSelect(){
+  var sel = document.getElementById("hSel");
+  if(!sel) return;
+  var imgs = getAllImages();
+  var cur = LS.get("sml_heroImg") || "img/mesin-mixer.jpg";
+  sel.innerHTML = "";
+  for(var i=0;i<imgs.length;i++){
+    var opt = document.createElement("option");
+    opt.value = imgs[i].src;
+    opt.textContent = imgs[i].name;
+    if(imgs[i].src === cur) opt.selected = true;
+    sel.appendChild(opt);
+  }
+  var pv = document.getElementById("hPv");
+  if(pv){ pv.src = sel.value; pv.style.display = "block"; }
+}
+
+function renderImgs(){
+  var imgs = getAllImages();
+  var g = document.getElementById("imgGrid");
+  var em = document.getElementById("imgEmpty");
+  var cnt = document.getElementById("imgCount");
+  if(!g) return;
+  if(cnt) cnt.textContent = imgs.length + " gambar";
+  if(!imgs.length){
+    g.innerHTML = "";
+    if(em) em.style.display = "block";
+    return;
+  }
+  if(em) em.style.display = "none";
+  g.innerHTML = "";
+  buildHeroSelect();
+
+  for(var i=0;i<imgs.length;i++){
+    var img_data = imgs[i];
     var div = document.createElement("div");
     div.className = "img-th";
-    div.title = fname;
-    var img = document.createElement("img");
-    img.src = f;
-    img.onerror = function(){ this.remove(); };
+    div.title = img_data.name;
+
+    var im = document.createElement("img");
+    im.src = img_data.src;
+    im.alt = img_data.name;
+    im.onerror = function(){ this.parentNode.style.opacity = ".4"; };
+
     var ov = document.createElement("div");
     ov.className = "img-ov";
-    var b1 = document.createElement("button");
-    b1.className = "ib";
-    b1.textContent = "C";
-    b1.title = "Copy nama";
-    (function(fn){
-      b1.onclick = function(){
-        if(navigator.clipboard) navigator.clipboard.writeText(fn);
-        notify("Disalin: "+fn,"ok");
+    ov.style.flexDirection = "column";
+    ov.style.gap = "4px";
+
+    var row1 = document.createElement("div");
+    row1.style.display = "flex";
+    row1.style.gap = "4px";
+
+    // C = copy name/src
+    var bC = document.createElement("button");
+    bC.className = "ib"; bC.textContent = "C"; bC.title = "Copy nama file";
+    (function(src, name){
+      bC.onclick = function(e){
+        e.stopPropagation();
+        var txt = src.startsWith("data:") ? name : src;
+        if(navigator.clipboard) navigator.clipboard.writeText(txt);
+        notify("Disalin: "+name,"ok");
       };
-    })(fname);
-    var b2 = document.createElement("button");
-    b2.className = "ib";
-    b2.textContent = "H";
-    b2.title = "Set Hero";
-    (function(fp){
-      b2.onclick = function(){
-        document.getElementById("hSel").value = fp;
-        document.getElementById("hPv").src = fp;
+    })(img_data.src, img_data.name);
+
+    // H = set hero
+    var bH = document.createElement("button");
+    bH.className = "ib"; bH.textContent = "H"; bH.title = "Set sebagai gambar Hero";
+    (function(src){
+      bH.onclick = function(e){
+        e.stopPropagation();
+        var sel = document.getElementById("hSel");
+        var pv  = document.getElementById("hPv");
+        if(sel){ sel.value = src; }
+        if(pv){ pv.src = src; pv.style.display = "block"; }
+        LS.set("sml_heroImg", src);
+        notify("Hero diperbarui","ok");
       };
-    })(f);
+    })(img_data.src);
+
+    // P = set to product form
+    var bP = document.createElement("button");
+    bP.className = "ib"; bP.title = "Pakai di form produk";
+    bP.textContent = "P";
+    bP.style.background = "rgba(200,150,26,.4)";
+    (function(src){
+      bP.onclick = function(e){
+        e.stopPropagation();
+        setProductImg(src);
+        notify("Gambar dipilih ke form produk","ok");
+      };
+    })(img_data.src);
+
+    row1.appendChild(bC); row1.appendChild(bH); row1.appendChild(bP);
+
+    // X = delete (only uploaded)
+    if(img_data.deletable){
+      var bX = document.createElement("button");
+      bX.className = "ib"; bX.textContent = "X"; bX.title = "Hapus gambar";
+      bX.style.background = "rgba(239,68,68,.5)";
+      (function(name){
+        bX.onclick = function(e){
+          e.stopPropagation();
+          if(!confirm("Hapus gambar "+name+"?")) return;
+          var up = LS.get("sml_uploaded_imgs") || [];
+          LS.set("sml_uploaded_imgs", up.filter(function(x){ return x.name !== name; }));
+          renderImgs();
+          notify("Gambar dihapus","ok");
+          addLog("Gambar "+name+" dihapus");
+        };
+      })(img_data.name);
+      row1.appendChild(bX);
+    }
+
+    ov.appendChild(row1);
     var lbl = document.createElement("div");
     lbl.className = "img-lbl";
-    lbl.textContent = fname;
-    ov.appendChild(b1); ov.appendChild(b2);
-    div.appendChild(img); div.appendChild(ov); div.appendChild(lbl);
+    lbl.textContent = img_data.name.length > 16 ? img_data.name.substring(0,14)+"…" : img_data.name;
+    div.appendChild(im); div.appendChild(ov); div.appendChild(lbl);
     g.appendChild(div);
   }
 }
-function handleUpload(el){
-  notify(el.files.length+" file dipilih. Upload perlu backend server.","ok");
+
+function handleUpload(files){
+  if(!files || !files.length) return;
+  var MAX = 3*1024*1024; // 3MB
+  var prog = document.getElementById("uploadProgress");
+  var bar  = document.getElementById("upBar");
+  var msg  = document.getElementById("upMsg");
+  var done = 0;
+  var total = files.length;
+  var uploaded = LS.get("sml_uploaded_imgs") || [];
+  prog.style.display = "block";
+
+  function processOne(file){
+    if(file.size > MAX){
+      notify("Terlalu besar (max 3MB): "+file.name,"err");
+      done++;
+      if(done === total) finishUpload(uploaded);
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var data = e.target.result;
+      // Check duplicate
+      var exists = false;
+      for(var i=0;i<uploaded.length;i++){ if(uploaded[i].name===file.name){ exists=true; break; } }
+      if(!exists) uploaded.push({name:file.name, data:data, ts:Date.now()});
+      done++;
+      var pct = Math.round(done/total*100);
+      bar.style.width = pct+"%";
+      msg.textContent = done+"/"+total+" diproses...";
+      if(done === total) finishUpload(uploaded);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  for(var i=0;i<files.length;i++) processOne(files[i]);
+}
+
+function finishUpload(uploaded){
+  try{
+    LS.set("sml_uploaded_imgs", uploaded);
+    renderImgs();
+    document.getElementById("uploadProgress").style.display = "none";
+    document.getElementById("upBar").style.width = "0%";
+    notify("Upload selesai! "+uploaded.length+" gambar tersimpan","ok");
+    addLog("Upload gambar: "+uploaded.length+" file");
+  }catch(err){
+    notify("Penyimpanan penuh. Coba hapus gambar lama atau kurangi ukuran file.","err");
+    document.getElementById("uploadProgress").style.display = "none";
+  }
+}
+
+function dropImg(event){
+  event.preventDefault();
+  document.getElementById("dropZone").style.borderColor = "rgba(200,150,26,.3)";
+  var files = event.dataTransfer.files;
+  handleUpload(files);
+}
+
+function saveHeroImg(){
+  var sel = document.getElementById("hSel");
+  if(!sel) return;
+  LS.set("sml_heroImg", sel.value);
+  notify("Gambar hero disimpan","ok");
+  addLog("Gambar hero diperbarui");
+}
+
+/* == IMAGE PICKER for Product Form == */
+function openImgPicker(){
+  var modal = document.getElementById("imgPickerModal");
+  if(!modal) return;
+  modal.style.display = "flex";
+  renderPickerGrid();
+}
+function closeImgPicker(){
+  document.getElementById("imgPickerModal").style.display = "none";
+}
+function renderPickerGrid(){
+  var imgs = getAllImages();
+  var g  = document.getElementById("pickerGrid");
+  var em = document.getElementById("pickerEmpty");
+  if(!g) return;
+  if(!imgs.length){
+    g.innerHTML = "";
+    if(em) em.style.display = "block";
+    return;
+  }
+  if(em) em.style.display = "none";
+  g.innerHTML = "";
+  for(var i=0;i<imgs.length;i++){
+    var img_data = imgs[i];
+    var div = document.createElement("div");
+    div.className = "img-th";
+    div.title = img_data.name;
+    div.style.cursor = "pointer";
+
+    var im = document.createElement("img");
+    im.src = img_data.src;
+    im.alt = img_data.name;
+
+    var ov = document.createElement("div");
+    ov.className = "img-ov";
+    var bSel = document.createElement("button");
+    bSel.className = "ib";
+    bSel.textContent = "✓";
+    bSel.title = "Pilih gambar ini";
+    bSel.style.cssText = "background:rgba(200,150,26,.7);font-size:15px;width:34px;height:34px";
+
+    (function(src){
+      bSel.onclick = function(e){
+        e.stopPropagation();
+        setProductImg(src);
+        closeImgPicker();
+        notify("Gambar dipilih","ok");
+      };
+      div.onclick = function(){
+        setProductImg(src);
+        closeImgPicker();
+        notify("Gambar dipilih","ok");
+      };
+    })(img_data.src);
+
+    var lbl = document.createElement("div");
+    lbl.className = "img-lbl";
+    lbl.textContent = img_data.name.length > 16 ? img_data.name.substring(0,14)+"…" : img_data.name;
+
+    ov.appendChild(bSel);
+    div.appendChild(im); div.appendChild(ov); div.appendChild(lbl);
+    g.appendChild(div);
+  }
+}
+
+function setProductImg(src){
+  var inp = document.getElementById("pI");
+  var pv  = document.getElementById("pImgPreview");
+  if(inp){ inp.value = src; }
+  if(pv){ pv.src = src; pv.style.display = "block"; }
+}
+
+function updateProdImgPreview(){
+  var src = document.getElementById("pI").value.trim();
+  var pv  = document.getElementById("pImgPreview");
+  if(pv){ pv.src = src; pv.style.display = src ? "block" : "none"; }
 }
 
 /* == VIDEO == */
@@ -1438,5 +1705,19 @@ if(adminLoggedIn){
   renderDash();
 }
 </script>
+<!-- IMAGE PICKER MODAL -->
+<div id="imgPickerModal" style="display:none;position:fixed;inset:0;background:rgba(5,15,30,.85);z-index:8888;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--n2);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:600px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#fff">Pilih Gambar dari Library</div>
+      <button onclick="closeImgPicker()" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#EF4444;padding:5px 11px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">Tutup</button>
+    </div>
+    <div style="overflow-y:auto;padding:14px">
+      <div class="img-grid" id="pickerGrid"></div>
+      <div id="pickerEmpty" style="display:none;text-align:center;padding:30px;color:#6A849E;font-size:13px">Belum ada gambar. Upload di halaman Manajemen Gambar.</div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
